@@ -105,11 +105,33 @@ decoding_superdense_coding/
    cd decoding_superdense_coding
    ```
 
-2. **Install dependencies:**
+2. **(Recommended) Create and activate a virtual environment:**
+
+   On **Windows**:
+   ```sh
+   python -m venv venv
+   venv\Scripts\activate
+   ```
+
+   On **macOS/Linux**:
+   ```sh
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies:**
    ```sh
    pip install -r requirements.txt
    ```
 
+4. **Run the Streamlit app:**
+   ```sh
+   streamlit run app.py
+   ```
+
+5. **Open your browser:**  
+   Visit the local URL provided by Streamlit (typically http://localhost:8501).
+   
 ---
 
 ## Usage
