@@ -276,6 +276,32 @@ def main():
     
     show_technical_specs = st.sidebar.checkbox("Show Technical Specifications", value=False)
     
+    # Quantum Cryptography Options
+    st.sidebar.markdown("### 🔐 Quantum Cryptography")
+    enable_quantum_crypto = st.sidebar.checkbox(
+        "🌌 Enable Quantum Cryptography",
+        value=True,
+        help="Add Quantum Random Number Generator and cryptographic security"
+    )
+    
+    if enable_quantum_crypto:
+        st.sidebar.info("🔥 **Enhanced Security Mode**\n- Quantum Random Key Generation\n- Quantum Authentication\n- Entropy Analysis")
+        
+        crypto_key_length = st.sidebar.selectbox(
+            "Quantum Key Length",
+            [64, 128, 256, 512],
+            index=1,
+            help="Length of quantum-generated cryptographic key (bits)"
+        )
+        
+        show_crypto_analysis = st.sidebar.checkbox(
+            "Show Cryptography Analysis",
+            value=True,
+            help="Display quantum cryptography dashboard and metrics"
+        )
+    else:
+        show_crypto_analysis = False
+    
     # Testing and analysis tools
     st.sidebar.markdown("### 🧪 Testing Tools")
     
@@ -492,8 +518,16 @@ def main():
                 progress_bar.empty()
                 status_text.empty()
             
-            # Execute protocol
-            result = protocol.run_protocol(bit0, bit1, noise_level)
+            # Execute protocol with quantum cryptography
+            protocol = SuperdenseCodingProtocol(enable_quantum_crypto=enable_quantum_crypto)
+            
+            if enable_quantum_crypto:
+                # Use enhanced quantum cryptographic protocol
+                result = protocol.run_protocol_with_quantum_crypto(bit0, bit1, noise_level, user_id="alice")
+                st.success("🔐 **Quantum Cryptography Enabled** - Enhanced security protocol executed!")
+            else:
+                # Use standard protocol
+                result = protocol.run_protocol(bit0, bit1, noise_level)
             
             # Security check
             if enable_security:
@@ -777,6 +811,132 @@ def main():
                 **🔒 Security**: Quantum properties make eavesdropping detectable
                 **⚡ Efficiency**: {result.get('quantum_advantage', 2)}x improvement over classical methods
                 """)
+            
+            # Quantum Cryptography Analysis
+            if enable_quantum_crypto and show_crypto_analysis and result.get('quantum_crypto_enabled'):
+                st.markdown("---")
+                st.markdown("### 🔐 Quantum Cryptography Analysis")
+                st.markdown("*Advanced quantum security features and randomness analysis*")
+                
+                # Display quantum cryptography metrics
+                display_quantum_crypto_metrics(result)
+                
+                # Create tabs for different crypto analysis
+                crypto_tab1, crypto_tab2, crypto_tab3 = st.tabs(["🔑 Key Analysis", "🎲 Randomness", "🔄 Crypto Flow"])
+                
+                with crypto_tab1:
+                    st.markdown("#### Quantum Key Generation Analysis")
+                    
+                    # Get entropy statistics
+                    entropy_stats = protocol.get_quantum_entropy_stats()
+                    
+                    if entropy_stats:
+                        col_ent1, col_ent2, col_ent3 = st.columns(3)
+                        
+                        with col_ent1:
+                            st.metric("Average Key Entropy", f"{entropy_stats['avg_key_entropy']:.3f}", 
+                                     help="Higher entropy = better randomness (max 8.0)")
+                        
+                        with col_ent2:
+                            st.metric("Quantum Quality", entropy_stats['quantum_quality'],
+                                     help="Overall assessment of quantum randomness quality")
+                        
+                        with col_ent3:
+                            st.metric("Crypto Sessions", entropy_stats['total_sessions'],
+                                     help="Number of quantum cryptographic sessions")
+                        
+                        # Cryptography dashboard
+                        crypto_dashboard = create_quantum_cryptography_dashboard(result, entropy_stats)
+                        st.plotly_chart(crypto_dashboard, use_container_width=True)
+                    
+                    # Key security analysis
+                    with st.expander("🔍 **Quantum Key Security Analysis**", expanded=False):
+                        key_entropy = result.get('quantum_key_entropy', 0)
+                        st.markdown(f"""
+                        **Quantum Key Properties:**
+                        
+                        • **Entropy Level**: {key_entropy:.3f} bits (max 8.0)
+                        • **Security Classification**: {result.get('quantum_security_level', 'UNKNOWN')}
+                        • **Authentication**: {result.get('quantum_auth_verified', 'Unknown')}
+                        • **Key Generation Method**: Quantum superposition + measurement
+                        
+                        **Security Implications:**
+                        
+                        ✅ **Quantum Advantage**: Keys generated using true quantum randomness
+                        🛡️ **Eavesdropping Detection**: Quantum properties reveal tampering
+                        🔒 **Forward Secrecy**: Each session uses unique quantum-generated keys
+                        ⚡ **Computational Security**: Quantum keys resist classical cryptanalysis
+                        """)
+                
+                with crypto_tab2:
+                    st.markdown("#### Quantum Random Number Generation")
+                    
+                    # Generate sample QRNG data for visualization
+                    if hasattr(protocol, 'qrng'):
+                        sample_bits = protocol.qrng.generate_quantum_random_bits(64)
+                        randomness_score = protocol.qrng.quantum_entropy_analysis(sample_bits) / 8.0
+                        
+                        qrng_data = {
+                            'random_bits': sample_bits,
+                            'randomness_score': randomness_score,
+                            'entropy': protocol.qrng.quantum_entropy_analysis(sample_bits)
+                        }
+                        
+                        # QRNG visualization
+                        qrng_fig = create_quantum_random_visualization(qrng_data)
+                        st.plotly_chart(qrng_fig, use_container_width=True)
+                        
+                        # QRNG analysis
+                        col_qrng1, col_qrng2 = st.columns(2)
+                        
+                        with col_qrng1:
+                            st.markdown("**Quantum Randomness Properties:**")
+                            st.write(f"• Sample size: {len(sample_bits)} bits")
+                            st.write(f"• Entropy: {qrng_data['entropy']:.3f} bits")
+                            st.write(f"• Quality score: {randomness_score*100:.1f}%")
+                            st.write(f"• 0s: {sample_bits.count(0)}, 1s: {sample_bits.count(1)}")
+                        
+                        with col_qrng2:
+                            st.markdown("**Quantum vs Classical:**")
+                            st.write("🌌 **Quantum RNG**: True randomness from quantum mechanics")
+                            st.write("🔢 **Classical RNG**: Pseudorandom algorithms")
+                            st.write("⚡ **Advantage**: Unpredictable even with infinite computing power")
+                            st.write("🔒 **Security**: Quantum randomness cannot be reproduced")
+                
+                with crypto_tab3:
+                    st.markdown("#### Quantum Cryptographic Protocol Flow")
+                    
+                    # Flow diagram
+                    flow_diagram = create_quantum_encryption_flow_diagram()
+                    st.plotly_chart(flow_diagram, use_container_width=True)
+                    
+                    # Protocol steps explanation
+                    with st.expander("🔄 **Step-by-Step Quantum Cryptographic Process**", expanded=False):
+                        st.markdown(f"""
+                        **Enhanced Quantum Superdense Coding with Cryptography:**
+                        
+                        **Phase 1 - Quantum Key Generation**:
+                        1. 🌌 **QRNG**: Generate true random bits using quantum superposition
+                        2. 🔑 **Key Derivation**: Create cryptographic keys from quantum randomness
+                        3. 🛡️ **Authentication**: Generate quantum authentication tokens
+                        
+                        **Phase 2 - Quantum Encryption**:
+                        4. 📝 **Message Input**: Your message: `{format_bits_display([bit0, bit1])}`
+                        5. 🔐 **Quantum Encryption**: Encrypt using quantum-generated keys
+                        6. ⚛️ **State Preparation**: Prepare encrypted message for quantum transmission
+                        
+                        **Phase 3 - Quantum Transmission**:
+                        7. 🌀 **Entanglement**: Create Bell state between Alice and Bob
+                        8. 🚀 **Encoding**: Alice encodes encrypted message into quantum state
+                        9. 📡 **Transmission**: Send quantum information through secure channel
+                        
+                        **Phase 4 - Quantum Decryption**:
+                        10. 📊 **Bell Measurement**: Bob measures quantum state
+                        11. 🔓 **Quantum Decryption**: Decrypt using shared quantum keys
+                        12. ✅ **Verification**: Verify message integrity and authenticity
+                        
+                        **🎯 Result**: Secure transmission of `{format_bits_display([bit0, bit1])}` with quantum-level security!
+                        """)
             
             # Detailed analysis
             if visualization_mode == "Detailed Analysis":
