@@ -235,16 +235,60 @@ def main():
     # Sidebar configuration - FIXED
     st.sidebar.header("⚙️ Protocol Configuration")
     
-    # FIXED: Noise level slider with proper range and explanation
-    st.sidebar.markdown("### Channel Noise Settings")
+    # FIXED: Enhanced noise level slider with integrated range display
+    st.sidebar.markdown("### 📡 Channel Noise Settings")
+    
+    # Create slider with custom styling to show range
+    st.sidebar.markdown("""
+    <style>
+    .slider-container {
+        position: relative;
+        margin: 10px 0;
+    }
+    .range-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #666;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Add range labels directly above slider
+    st.sidebar.markdown("""
+    <div class="range-labels">
+        <span>🟢 Min: 0.00</span>
+        <span>🔴 Max: 0.50</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Enhanced noise level slider 
     noise_level = st.sidebar.slider(
         "Quantum Channel Noise Level",
         min_value=0.00,
-        max_value=0.50,  # Increased range for better testing
+        max_value=0.50,  
         value=0.05,
         step=0.01,
-        help="Probability of quantum errors during transmission (0 = perfect channel, 0.5 = very noisy)"
+        help="Drag to adjust noise level (0.00 = Perfect, 0.50 = Very Noisy)",
+        format="%.2f",
+        label_visibility="collapsed"
     )
+    
+    # Show current value prominently right below slider
+    st.sidebar.markdown(f"**📊 Current: {noise_level:.2f}**")
+    
+    # Display quality assessment
+    if noise_level <= 0.05:
+        st.sidebar.success("🟢 **Excellent**: Laboratory conditions")
+    elif noise_level <= 0.15:
+        st.sidebar.info("🟡 **Good**: Practical quantum networks")
+    elif noise_level <= 0.30:
+        st.sidebar.warning("🟠 **Challenging**: Early quantum internet")
+    else:
+        st.sidebar.error("🔴 **Severe**: Experimental conditions")
+    
     protocol.noise_level = noise_level
     
     # Display noise level interpretation
@@ -257,7 +301,7 @@ def main():
     else:
         noise_desc = "🔴 Severe (Experimental conditions)"
     
-    st.sidebar.markdown(f"**Channel Quality:** {noise_desc}")
+    st.sidebar.markdown(f"**Current Quality:** {noise_desc}")
     
     # Security monitoring toggle
     enable_security = st.sidebar.checkbox(
@@ -518,335 +562,335 @@ def main():
                 progress_bar.empty()
                 status_text.empty()
             
-            # Execute protocol with quantum cryptography
-            protocol = SuperdenseCodingProtocol(enable_quantum_crypto=enable_quantum_crypto)
+            # Execute protocol with quantum cryptography - single level testing
+            single_protocol = SuperdenseCodingProtocol(enable_quantum_crypto=enable_quantum_crypto)
             
             if enable_quantum_crypto:
                 # Use enhanced quantum cryptographic protocol
-                result = protocol.run_protocol_with_quantum_crypto(bit0, bit1, noise_level, user_id="alice")
+                result = single_protocol.run_protocol_with_quantum_crypto(bit0, bit1, noise_level, user_id="alice")
                 st.success("🔐 **Quantum Cryptography Enabled** - Enhanced security protocol executed!")
             else:
                 # Use standard protocol
-                result = protocol.run_protocol(bit0, bit1, noise_level)
-            
-            # Security check
-            if enable_security:
-                is_secure, security_metric, chsh_value = protocol.detect_eavesdropping()
+                result = single_protocol.run_protocol(bit0, bit1, noise_level)
                 
-                col_sec1, col_sec2 = st.columns(2)
-                
-                with col_sec1:
-                    if is_secure:
-                        create_info_box(
-                            "🛡️ Channel Security Status",
-                            f"Channel is SECURE. CHSH parameter: {chsh_value:.3f} (> 2.0 indicates quantum advantage)",
-                            "success"
-                        )
-                    else:
-                        create_info_box(
-                            "⚠️ Security Alert",
-                            f"Potential eavesdropping detected! CHSH parameter: {chsh_value:.3f} (≤ 2.0 indicates possible intrusion)",
-                            "warning"
-                        )
-                
-                with col_sec2:
-                    gauge_fig, security_level = create_security_gauge(security_metric, chsh_value)
-                    st.plotly_chart(gauge_fig, use_container_width=True)
-            
-            # Real-time channel status
-            st.markdown("---")
-            channel_status = protocol.get_real_time_channel_status()
-            
-            # Channel status display
-            status_colors = {
-                'EXCELLENT': '🟢',
-                'GOOD': '🟡',
-                'DEGRADED': '🟠', 
-                'POOR': '🔴',
-                'INITIALIZING': '⚪'
-            }
-            
-            col_status1, col_status2 = st.columns(2)
-            
-            with col_status1:
-                st.markdown(f"""
-                ### 📡 Real-Time Channel Status
-                
-                **Status:** {status_colors.get(channel_status['status'], '⚪')} {channel_status['status']}
-                
-                **Quality:** {channel_status['quality']}
-                
-                **Stability:** {channel_status['stability']:.3f}
-                
-                **Recommendation:** {channel_status['recommendation']}
-                """)
-            
-            with col_status2:
-                st.markdown(f"""
-                ### 📊 Performance Metrics
-                
-                **Consecutive Successes:** {channel_status['consecutive_successes']}
-                
-                **Consecutive Failures:** {channel_status['consecutive_failures']}
-                
-                **Channel Quality:** {result['fidelity']:.3f}
-                
-                **Noise Impact:** {result['noise_level']:.3f}
-                """)
-                
-                # Channel quality indicator
-                create_channel_quality_indicator(result['noise_level'], result['fidelity'])
-            
-            # Results display
-            create_info_box(
-                "✅ Protocol Execution Completed",
-                f"Successfully processed quantum superdense coding protocol in {result['execution_time']:.3f} seconds",
-                "success"
-            )
-            
-            # Metrics display
-            col_r1, col_r2, col_r3, col_r4 = st.columns(4)
-            
-            with col_r1:
-                st.metric(
-                    "Transmission",
-                    "✅ Success" if result['success'] else "❌ Failed",
-                    help="Whether the decoded message matches the original"
-                )
-            
-            with col_r2:
-                st.metric(
-                    "Protocol Fidelity",
-                    f"{result['fidelity']:.3f}",
-                    delta=f"{(result['fidelity']-0.5):.3f}",
-                    help="Measurement accuracy (1.0 = perfect, 0.5 = random)"
-                )
-            
-            with col_r3:
-                st.metric(
-                    "Error Rate",
-                    f"{result['error_rate']:.3f}",
-                    delta=f"-{result['error_rate']:.3f}",
-                    help="Probability of incorrect decoding"
-                )
-            
-            with col_r4:
-                st.metric(
-                    "Quantum Advantage",
-                    f"{result['quantum_advantage']}x",
-                    help="Efficiency multiplier over classical communication"
-                )
-            
-            # Message comparison
-            st.markdown("### 📋 Message Transmission Analysis")
-            
-            col_t1, col_t2, col_t3 = st.columns(3)
-            
-            with col_t1:
-                st.markdown("**Original Message (Alice):**")
-                st.code(format_bits_display(result['original_bits']))
-            
-            with col_t2:
-                st.markdown("**Decoded Message (Bob):**")
-                st.code(format_bits_display(result['decoded_bits']))
-                
-            with col_t3:
-                st.markdown("**Transmission Result:**")
-                
-                # Real-time comparison for accurate validation
-                original_bits = result['original_bits']
-                decoded_bits = result['decoded_bits']
-                
-                # Direct comparison of bit arrays
-                if len(original_bits) == len(decoded_bits) and original_bits == decoded_bits:
-                    transmission_success = True
-                    st.success("✅ Perfect Match!")
-                else:
-                    transmission_success = False
-                    st.error("❌ Transmission Error")
+                # Security check for single level testing
+                if enable_security:
+                    is_secure, security_metric, chsh_value = single_protocol.detect_eavesdropping()
                     
-                # Show detailed bit comparison
-                if not transmission_success:
-                    st.warning(f"Expected: {original_bits}, Got: {decoded_bits}")
+                    col_sec1, col_sec2 = st.columns(2)
+                    
+                    with col_sec1:
+                        if is_secure:
+                            create_info_box(
+                                "🛡️ Channel Security Status",
+                                f"Channel is SECURE. CHSH parameter: {chsh_value:.3f} (> 2.0 indicates quantum advantage)",
+                                "success"
+                            )
+                        else:
+                            create_info_box(
+                                "⚠️ Security Alert",
+                                f"Potential eavesdropping detected! CHSH parameter: {chsh_value:.3f} (≤ 2.0 indicates possible intrusion)",
+                                "warning"
+                            )
+                    
+                    with col_sec2:
+                        gauge_fig, security_level = create_security_gauge(security_metric, chsh_value)
+                        st.plotly_chart(gauge_fig, use_container_width=True)
+                
+                # Real-time channel status for single level testing
+                st.markdown("---")
+                channel_status = single_protocol.get_real_time_channel_status()
+                
+                # Channel status display
+                status_colors = {
+                    'EXCELLENT': '🟢',
+                    'GOOD': '🟡',
+                    'DEGRADED': '🟠', 
+                    'POOR': '🔴',
+                    'INITIALIZING': '⚪'
+                }
+                
+                col_status1, col_status2 = st.columns(2)
+                
+                with col_status1:
+                    st.markdown(f"""
+                    ### 📡 Real-Time Channel Status
+                    
+                    **Status:** {status_colors.get(channel_status['status'], '⚪')} {channel_status['status']}
+                    
+                    **Quality:** {channel_status['quality']}
+                    
+                    **Stability:** {channel_status['stability']:.3f}
+                    
+                    **Recommendation:** {channel_status['recommendation']}
+                    """)
+                
+                with col_status2:
+                    st.markdown(f"""
+                    ### 📊 Performance Metrics
+                    
+                    **Consecutive Successes:** {channel_status['consecutive_successes']}
+                    
+                    **Consecutive Failures:** {channel_status['consecutive_failures']}
+                    
+                    **Channel Quality:** {result['fidelity']:.3f}
+                    
+                    **Noise Impact:** {result['noise_level']:.3f}
+                    """)
+                    
+                    # Channel quality indicator
+                    create_channel_quality_indicator(result['noise_level'], result['fidelity'])
+                
+                # Results display for single level testing
+                create_info_box(
+                    "✅ Protocol Execution Completed",
+                    f"Successfully processed quantum superdense coding protocol in {result['execution_time']:.3f} seconds",
+                    "success"
+                )
+                
+                # Metrics display
+                col_r1, col_r2, col_r3, col_r4 = st.columns(4)
+                
+                with col_r1:
+                    st.metric(
+                        "Transmission",
+                        "✅ Success" if result['success'] else "❌ Failed",
+                        help="Whether the decoded message matches the original"
+                    )
+                
+                with col_r2:
+                    st.metric(
+                        "Protocol Fidelity",
+                        f"{result['fidelity']:.3f}",
+                        delta=f"{(result['fidelity']-0.5):.3f}",
+                        help="Measurement accuracy (1.0 = perfect, 0.5 = random)"
+                    )
+                
+                with col_r3:
+                    st.metric(
+                        "Error Rate",
+                        f"{result['error_rate']:.3f}",
+                        delta=f"-{result['error_rate']:.3f}",
+                        help="Probability of incorrect decoding"
+                    )
+                
+                with col_r4:
+                    st.metric(
+                        "Quantum Advantage",
+                        f"{result['quantum_advantage']}x",
+                        help="Efficiency multiplier over classical communication"
+                    )
+                
+                # Message comparison
+                st.markdown("### 📋 Message Transmission Analysis")
+                
+                col_t1, col_t2, col_t3 = st.columns(3)
+                
+                with col_t1:
+                    st.markdown("**Original Message (Alice):**")
+                    st.code(format_bits_display(result['original_bits']))
+                
+                with col_t2:
+                    st.markdown("**Decoded Message (Bob):**")
+                    st.code(format_bits_display(result['decoded_bits']))
+                    
+                with col_t3:
+                    st.markdown("**Transmission Result:**")
+                    
+                    # Real-time comparison for accurate validation
+                    original_bits = result['original_bits']
+                    decoded_bits = result['decoded_bits']
+                    
+                    # Direct comparison of bit arrays
+                    if len(original_bits) == len(decoded_bits) and original_bits == decoded_bits:
+                        transmission_success = True
+                        st.success("✅ Perfect Match!")
+                    else:
+                        transmission_success = False
+                        st.error("❌ Transmission Error")
+                        
+                    # Show detailed bit comparison
+                    if not transmission_success:
+                        st.warning(f"Expected: {original_bits}, Got: {decoded_bits}")
                 
                 # Update the result with correct success status
                 result['success'] = transmission_success
-            
-            # Quantum Simulation Visualization
-            st.markdown("---")
-            st.markdown("### 🌌 Quantum Protocol Simulation Visualization")
-            st.markdown("*Real-time visualization of how the protocol encrypts and transmits your data*")
-            
-            # Create tabs for different visualization types
-            viz_tab1, viz_tab2, viz_tab3 = st.tabs(["🔄 Quantum Circuit", "🌐 Bloch Spheres & States", "📊 State Evolution"])
-            
-            with viz_tab1:
-                st.markdown("#### Quantum Circuit Diagram")
-                st.markdown("Shows the actual quantum gates and operations used in your protocol execution:")
                 
-                circuit_fig = create_quantum_circuit_visualization([bit0, bit1], result)
-                st.plotly_chart(circuit_fig, use_container_width=True)
-                
-                # Circuit explanation
-                with st.expander("🔍 **Circuit Step-by-Step Explanation**", expanded=False):
-                    st.markdown(f"""
-                    **Your Message: {format_bits_display([bit0, bit1])}**
-                    
-                    1. **Bell State Preparation** (Blue):
-                       - Hadamard gate creates superposition on Alice's qubit
-                       - CNOT gate creates entanglement between Alice and Bob
-                       - Result: |Φ⁺⟩ = (|00⟩ + |11⟩)/√2
-                    
-                    2. **Alice's Encoding** (Red/Green):
-                       - Bit₁ = {bit1}: {'X gate applied' if bit1 == 1 else 'No X gate (Identity)'}
-                       - Bit₀ = {bit0}: {'Z gate applied' if bit0 == 1 else 'No Z gate (Identity)'}
-                       - Encodes your 2-bit message into quantum state
-                    
-                    3. **Bell Measurement** (Purple/Orange):
-                       - CNOT gate followed by Hadamard on Alice's qubit
-                       - Disentangles the qubits for measurement
-                       - Projects the quantum state to classical bits
-                    
-                    4. **Result** (Gray):
-                       - Measurement yields: |{bit0}{bit1}⟩
-                       - Bob successfully decodes Alice's original message!
-                    """)
-            
-            with viz_tab2:
-                st.markdown("#### Bloch Sphere Representation & State Vectors")
-                st.markdown("Visualizes quantum states throughout the protocol execution:")
-                
-                bloch_fig = create_quantum_state_visualization(result, [bit0, bit1])
-                st.plotly_chart(bloch_fig, use_container_width=True)
-                
-                # State explanation
-                with st.expander("🌐 **Quantum State Analysis**", expanded=False):
-                    st.markdown(f"""
-                    **Understanding the Bloch Spheres:**
-                    
-                    🔵 **Initial State**: 
-                    - Both qubits are maximally entangled
-                    - No definite state vector (entangled superposition)
-                    - Represents the shared Bell state |Φ⁺⟩
-                    
-                    🔴 **After Encoding**: 
-                    - Alice applies quantum gates based on her message
-                    - State vector shows the encoded quantum information
-                    - Message {format_bits_display([bit0, bit1])} is now embedded in the quantum state
-                    
-                    🟢 **After Measurement**:
-                    - Bell measurement disentangles the qubits
-                    - State collapses to definite classical result
-                    - Bob obtains the decoded bits: {bit0}, {bit1}
-                    
-                    📈 **State Vector Evolution**:
-                    - Shows probability amplitudes for each basis state
-                    - Demonstrates quantum superposition and collapse
-                    - Final state matches Alice's original message
-                    """)
-            
-            with viz_tab3:
-                st.markdown("#### Real-time Protocol Metrics")
-                
-                col_metrics1, col_metrics2 = st.columns(2)
-                
-                with col_metrics1:
-                    st.markdown("**Quantum State Properties:**")
-                    
-                    # Calculate quantum state metrics
-                    fidelity = result.get('fidelity', 0)
-                    entanglement_measure = min(1.0, max(0.0, 1.0 - result.get('noise_level', 0)))
-                    coherence_time = result.get('execution_time', 0) * 1000  # Convert to ms
-                    
-                    st.metric("State Fidelity", f"{fidelity:.3f}", 
-                             help="Accuracy of quantum state preparation (1.0 = perfect)")
-                    st.metric("Entanglement Quality", f"{entanglement_measure:.3f}", 
-                             help="Measure of quantum entanglement strength")
-                    st.metric("Coherence Time", f"{coherence_time:.1f} ms", 
-                             help="Duration quantum information remained coherent")
-                    
-                    # Quantum advantage indicator
-                    qa = result.get('quantum_advantage', 1)
-                    if qa >= 2:
-                        st.success(f"⚡ **Quantum Advantage**: {qa}x efficiency over classical!")
-                    elif qa >= 1.5:
-                        st.info(f"✨ **Quantum Benefit**: {qa}x improvement")
-                    else:
-                        st.warning(f"⚡ **Classical Comparable**: {qa}x efficiency")
-                
-                with col_metrics2:
-                    st.markdown("**Protocol Security Analysis:**")
-                    
-                    # Security metrics based on quantum properties
-                    security_level = "High" if fidelity > 0.85 else "Medium" if fidelity > 0.7 else "Low"
-                    noise_impact = result.get('noise_level', 0)
-                    error_rate = result.get('error_rate', 0)
-                    
-                    st.metric("Security Level", security_level,
-                             help="Based on quantum state fidelity and error rates")
-                    st.metric("Noise Impact", f"{noise_impact:.3f}",
-                             help="Environmental interference level (0 = no noise)")
-                    st.metric("Transmission Error", f"{error_rate:.3f}",
-                             help="Probability of incorrect decoding")
-                    
-                    # Protocol recommendation
-                    if error_rate < 0.1 and fidelity > 0.8:
-                        st.success("🛡️ **Excellent**: Protocol suitable for secure communication")
-                    elif error_rate < 0.3 and fidelity > 0.6:
-                        st.info("✅ **Good**: Protocol performs well for most applications")
-                    else:
-                        st.warning("⚠️ **Caution**: Consider error correction for critical applications")
-            
-            # Technical insights
-            st.markdown("---")
-            with st.expander("🔬 **Technical Insights: How Your Data Gets Encrypted**", expanded=False):
-                st.markdown(f"""
-                ### The Quantum Encryption Process:
-                
-                **1. Your Input**: `{format_bits_display([bit0, bit1])}`
-                - This represents your original 2-bit message
-                - In classical communication, this would require 2 separate transmissions
-                
-                **2. Quantum Encoding**: 
-                - Alice applies quantum gates: {'X' if bit1==1 else 'I'}⊗{'Z' if bit0==1 else 'I'}
-                - This transforms the shared Bell state: |Φ⁺⟩ → |Φ{['⁺','⁻','ᵧ','ᵧ⁻'][bit0*2+bit1]}⟩
-                - Your 2 bits are now encoded in quantum entanglement properties
-                
-                **3. Quantum Transmission**:
-                - Alice sends only 1 qubit (instead of 2 classical bits)
-                - The entanglement preserves both bits of information
-                - Bob's qubit automatically contains the complementary information
-                
-                **4. Quantum Decoding**:
-                - Bell measurement extracts both encoded bits simultaneously
-                - Quantum measurement collapses the superposition
-                - Result: Bob recovers your original message `{format_bits_display([bit0, bit1])}`
-                
-                **🎯 Key Advantage**: 2 bits transmitted using only 1 quantum particle!
-                **🔒 Security**: Quantum properties make eavesdropping detectable
-                **⚡ Efficiency**: {result.get('quantum_advantage', 2)}x improvement over classical methods
-                """)
-            
-            # Quantum Cryptography Analysis
-            if enable_quantum_crypto and show_crypto_analysis and result.get('quantum_crypto_enabled'):
+                # Quantum Simulation Visualization for single level testing
                 st.markdown("---")
-                st.markdown("### 🔐 Quantum Cryptography Analysis")
-                st.markdown("*Advanced quantum security features and randomness analysis*")
+                st.markdown("### 🌌 Quantum Protocol Simulation Visualization")
+                st.markdown("*Real-time visualization of how the protocol encrypts and transmits your data*")
                 
-                # Display quantum cryptography metrics
-                display_quantum_crypto_metrics(result)
+                # Create tabs for different visualization types
+                viz_tab1, viz_tab2, viz_tab3 = st.tabs(["🔄 Quantum Circuit", "🌐 Bloch Spheres & States", "📊 State Evolution"])
                 
-                # Create tabs for different crypto analysis
-                crypto_tab1, crypto_tab2, crypto_tab3 = st.tabs(["🔑 Key Analysis", "🎲 Randomness", "🔄 Crypto Flow"])
-                
-                with crypto_tab1:
-                    st.markdown("#### Quantum Key Generation Analysis")
+                with viz_tab1:
+                    st.markdown("#### Quantum Circuit Diagram")
+                    st.markdown("Shows the actual quantum gates and operations used in your protocol execution:")
                     
-                    # Get entropy statistics
-                    entropy_stats = protocol.get_quantum_entropy_stats()
+                    circuit_fig = create_quantum_circuit_visualization([bit0, bit1], result)
+                    st.plotly_chart(circuit_fig, use_container_width=True)
+                
+                    # Circuit explanation
+                    with st.expander("🔍 **Circuit Step-by-Step Explanation**", expanded=False):
+                        st.markdown(f"""
+                        **Your Message: {format_bits_display([bit0, bit1])}**
+                        
+                        1. **Bell State Preparation** (Blue):
+                           - Hadamard gate creates superposition on Alice's qubit
+                           - CNOT gate creates entanglement between Alice and Bob
+                           - Result: |Φ⁺⟩ = (|00⟩ + |11⟩)/√2
+                        
+                        2. **Alice's Encoding** (Red/Green):
+                           - Bit₁ = {bit1}: {'X gate applied' if bit1 == 1 else 'No X gate (Identity)'}
+                           - Bit₀ = {bit0}: {'Z gate applied' if bit0 == 1 else 'No Z gate (Identity)'}
+                           - Encodes your 2-bit message into quantum state
+                        
+                        3. **Bell Measurement** (Purple/Orange):
+                           - CNOT gate followed by Hadamard on Alice's qubit
+                           - Disentangles the qubits for measurement
+                           - Projects the quantum state to classical bits
+                        
+                        4. **Result** (Gray):
+                           - Measurement yields: |{bit0}{bit1}⟩
+                           - Bob successfully decodes Alice's original message!
+                        """)
+                
+                with viz_tab2:
+                    st.markdown("#### Bloch Sphere Representation & State Vectors")
+                    st.markdown("Visualizes quantum states throughout the protocol execution:")
                     
-                    if entropy_stats:
-                        col_ent1, col_ent2, col_ent3 = st.columns(3)
+                    bloch_fig = create_quantum_state_visualization(result, [bit0, bit1])
+                    st.plotly_chart(bloch_fig, use_container_width=True)
+                
+                    # State explanation
+                    with st.expander("🌐 **Quantum State Analysis**", expanded=False):
+                        st.markdown(f"""
+                        **Understanding the Bloch Spheres:**
+                        
+                        🔵 **Initial State**: 
+                        - Both qubits are maximally entangled
+                        - No definite state vector (entangled superposition)
+                        - Represents the shared Bell state |Φ⁺⟩
+                        
+                        🔴 **After Encoding**: 
+                        - Alice applies quantum gates based on her message
+                        - State vector shows the encoded quantum information
+                        - Message {format_bits_display([bit0, bit1])} is now embedded in the quantum state
+                        
+                        🟢 **After Measurement**:
+                        - Bell measurement disentangles the qubits
+                        - State collapses to definite classical result
+                        - Bob obtains the decoded bits: {bit0}, {bit1}
+                        
+                        📈 **State Vector Evolution**:
+                        - Shows probability amplitudes for each basis state
+                        - Demonstrates quantum superposition and collapse
+                        - Final state matches Alice's original message
+                        """)
+                
+                with viz_tab3:
+                    st.markdown("#### Real-time Protocol Metrics")
+                    
+                    col_metrics1, col_metrics2 = st.columns(2)
+                    
+                    with col_metrics1:
+                        st.markdown("**Quantum State Properties:**")
+                        
+                        # Calculate quantum state metrics
+                        fidelity = result.get('fidelity', 0)
+                        entanglement_measure = min(1.0, max(0.0, 1.0 - result.get('noise_level', 0)))
+                        coherence_time = result.get('execution_time', 0) * 1000  # Convert to ms
+                        
+                        st.metric("State Fidelity", f"{fidelity:.3f}", 
+                                 help="Accuracy of quantum state preparation (1.0 = perfect)")
+                        st.metric("Entanglement Quality", f"{entanglement_measure:.3f}", 
+                                 help="Measure of quantum entanglement strength")
+                        st.metric("Coherence Time", f"{coherence_time:.1f} ms", 
+                                 help="Duration quantum information remained coherent")
+                        
+                        # Quantum advantage indicator
+                        qa = result.get('quantum_advantage', 1)
+                        if qa >= 2:
+                            st.success(f"⚡ **Quantum Advantage**: {qa}x efficiency over classical!")
+                        elif qa >= 1.5:
+                            st.info(f"✨ **Quantum Benefit**: {qa}x improvement")
+                        else:
+                            st.warning(f"⚡ **Classical Comparable**: {qa}x efficiency")
+                    
+                    with col_metrics2:
+                        st.markdown("**Protocol Security Analysis:**")
+                        
+                        # Security metrics based on quantum properties
+                        security_level = "High" if fidelity > 0.85 else "Medium" if fidelity > 0.7 else "Low"
+                        noise_impact = result.get('noise_level', 0)
+                        error_rate = result.get('error_rate', 0)
+                        
+                        st.metric("Security Level", security_level,
+                                 help="Based on quantum state fidelity and error rates")
+                        st.metric("Noise Impact", f"{noise_impact:.3f}",
+                                 help="Environmental interference level (0 = no noise)")
+                        st.metric("Transmission Error", f"{error_rate:.3f}",
+                                 help="Probability of incorrect decoding")
+                    
+                        # Protocol recommendation
+                        if error_rate < 0.1 and fidelity > 0.8:
+                            st.success("🛡️ **Excellent**: Protocol suitable for secure communication")
+                        elif error_rate < 0.3 and fidelity > 0.6:
+                            st.info("✅ **Good**: Protocol performs well for most applications")
+                        else:
+                            st.warning("⚠️ **Caution**: Consider error correction for critical applications")
+                
+                # Technical insights for single level testing
+                st.markdown("---")
+                with st.expander("🔬 **Technical Insights: How Your Data Gets Encrypted**", expanded=False):
+                    st.markdown(f"""
+                    ### The Quantum Encryption Process:
+                    
+                    **1. Your Input**: `{format_bits_display([bit0, bit1])}`
+                    - This represents your original 2-bit message
+                    - In classical communication, this would require 2 separate transmissions
+                    
+                    **2. Quantum Encoding**: 
+                    - Alice applies quantum gates: {'X' if bit1==1 else 'I'}⊗{'Z' if bit0==1 else 'I'}
+                    - This transforms the shared Bell state: |Φ⁺⟩ → |Φ{['⁺','⁻','ᵧ','ᵧ⁻'][bit0*2+bit1]}⟩
+                    - Your 2 bits are now encoded in quantum entanglement properties
+                    
+                    **3. Quantum Transmission**:
+                    - Alice sends only 1 qubit (instead of 2 classical bits)
+                    - The entanglement preserves both bits of information
+                    - Bob's qubit automatically contains the complementary information
+                    
+                    **4. Quantum Decoding**:
+                    - Bell measurement extracts both encoded bits simultaneously
+                    - Quantum measurement collapses the superposition
+                    - Result: Bob recovers your original message `{format_bits_display([bit0, bit1])}`
+                    
+                    **🎯 Key Advantage**: 2 bits transmitted using only 1 quantum particle!
+                    **🔒 Security**: Quantum properties make eavesdropping detectable
+                    **⚡ Efficiency**: {result.get('quantum_advantage', 2)}x improvement over classical methods
+                    """)
+                
+                # Quantum Cryptography Analysis for single level testing
+                if enable_quantum_crypto and show_crypto_analysis and result.get('quantum_crypto_enabled'):
+                    st.markdown("---")
+                    st.markdown("### 🔐 Quantum Cryptography Analysis")
+                    st.markdown("*Advanced quantum security features and randomness analysis*")
+                    
+                    # Display quantum cryptography metrics
+                    display_quantum_crypto_metrics(result)
+                    
+                    # Create tabs for different crypto analysis
+                    crypto_tab1, crypto_tab2, crypto_tab3 = st.tabs(["🔑 Key Analysis", "🎲 Randomness", "🔄 Crypto Flow"])
+                    
+                    with crypto_tab1:
+                        st.markdown("#### Quantum Key Generation Analysis")
+                        
+                        # Get entropy statistics
+                        entropy_stats = single_protocol.get_quantum_entropy_stats()
+                        
+                        if entropy_stats:
+                            col_ent1, col_ent2, col_ent3 = st.columns(3)
                         
                         with col_ent1:
                             st.metric("Average Key Entropy", f"{entropy_stats['avg_key_entropy']:.3f}", 
@@ -887,14 +931,14 @@ def main():
                     st.markdown("#### Quantum Random Number Generation")
                     
                     # Generate sample QRNG data for visualization
-                    if hasattr(protocol, 'qrng'):
-                        sample_bits = protocol.qrng.generate_quantum_random_bits(64)
-                        randomness_score = protocol.qrng.quantum_entropy_analysis(sample_bits) / 8.0
+                    if hasattr(single_protocol, 'qrng'):
+                        sample_bits = single_protocol.qrng.generate_quantum_random_bits(64)
+                        randomness_score = single_protocol.qrng.quantum_entropy_analysis(sample_bits) / 8.0
                         
                         qrng_data = {
                             'random_bits': sample_bits,
                             'randomness_score': randomness_score,
-                            'entropy': protocol.qrng.quantum_entropy_analysis(sample_bits)
+                            'entropy': single_protocol.qrng.quantum_entropy_analysis(sample_bits)
                         }
                         
                         # QRNG visualization
@@ -1148,8 +1192,10 @@ def main():
             
         with col_s4:
             st.metric("Best Fidelity", f"{max(fidelities):.3f}")
+
+    # END OF EXECUTE_BUTTON CONDITIONAL BLOCK
     
-    # Real-world applications
+    # Real-world applications (independent of execution)
     st.markdown("---")
     st.markdown("## 🌍 Real-World Applications")
     
