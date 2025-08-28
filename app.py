@@ -214,23 +214,64 @@ def main():
         elif input_method == "Text to Binary":
             text_input = st.text_input(
                 "Enter Text:",
-                value="A",
-                max_chars=10,
-                help="First character will be converted to binary (first 2 bits used)"
+                value="Hello World",
+                max_chars=100,
+                help="Entire text will be analyzed using multiple encoding methods"
             )
             
             if text_input:
-                bit0, bit1 = text_to_bits(text_input)
-                ascii_val = ord(text_input[0])
-                binary_full = format(ascii_val, '08b')
+                bit0, bit1, analysis_data = text_to_bits(text_input)
                 
-                st.markdown(f"""
-                **Character Analysis:**
-                - Character: **'{text_input[0]}'**
-                - ASCII Value: **{ascii_val}**
-                - Full Binary: **{binary_full}**
-                - Used Bits: **{bit0}{bit1}** (first 2 bits)
-                """)
+                # Let user choose encoding method
+                col_method, col_preview = st.columns([1, 1])
+                
+                with col_method:
+                    selected_method = st.selectbox(
+                        "Choose Encoding Method:",
+                        list(analysis_data['methods'].keys()),
+                        index=0,  # Default to Hash-based
+                        help="Different methods analyze text in various ways"
+                    )
+                
+                # Update bits based on selected method
+                if selected_method != analysis_data['selected_method']:
+                    selected_bits = analysis_data['methods'][selected_method]
+                    bit0, bit1 = int(selected_bits[0]), int(selected_bits[1])
+                
+                with col_preview:
+                    st.markdown(f"**Selected Bits:** `{bit0}{bit1}`")
+                    st.markdown(f"**Quantum State:** {format_bits_display([bit0, bit1])}")
+                
+                # Create expandable analysis section
+                with st.expander("📊 **Full Text Analysis**", expanded=True):
+                    col_stats, col_methods = st.columns(2)
+                    
+                    with col_stats:
+                        st.markdown("**Text Statistics:**")
+                        st.write(f"• Length: **{analysis_data['text_length']}** characters")
+                        st.write(f"• Unique chars: **{analysis_data['unique_chars']}**")
+                        st.write(f"• Vowels: **{analysis_data['vowel_count']}**")
+                        st.write(f"• ASCII sum: **{analysis_data['ascii_sum']}**")
+                        st.write(f"• Hash (8 chars): **{analysis_data['hash_value']}**")
+                    
+                    with col_methods:
+                        st.markdown("**All Encoding Methods:**")
+                        for method, bits in analysis_data['methods'].items():
+                            is_selected = method == selected_method
+                            if is_selected:
+                                st.markdown(f"🎯 **{method}: {bits}** ✓")
+                            else:
+                                st.write(f"   {method}: {bits}")
+                
+                # Show encoding method details
+                method_info = {
+                    'Hash-based': "Uses MD5 hash of entire text - most uniform distribution",
+                    'Frequency': "Based on vowel frequency and text length parity",
+                    'ASCII Sum': "Uses sum of all ASCII values in the text",
+                    'Diversity': "Considers character uniqueness and digit presence"
+                }
+                
+                st.info(f"**{selected_method}:** {method_info.get(selected_method, 'Custom encoding method')}")
             else:
                 bit0, bit1 = 0, 1
         

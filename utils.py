@@ -671,18 +671,60 @@ def create_performance_chart(results_history):
     return fig
 
 def text_to_bits(text):
-    """Convert text to 2-bit representation"""
+    """Convert entire text to 2-bit representation using multiple encoding methods"""
+    if not text:
+        return 0, 0, {}
+    
+    # Method 1: Hash-based encoding (most robust for entire text)
+    import hashlib
+    text_hash = hashlib.md5(text.encode()).hexdigest()
+    hash_val = int(text_hash[:2], 16)  # First 2 hex chars to decimal
+    hash_bit0 = (hash_val >> 1) & 1
+    hash_bit1 = hash_val & 1
+    
+    # Method 2: Character frequency analysis
+    char_count = len(text)
+    vowel_count = sum(1 for c in text.lower() if c in 'aeiou')
+    freq_bit0 = 1 if vowel_count > char_count // 2 else 0
+    freq_bit1 = 1 if char_count % 2 == 1 else 0
+    
+    # Method 3: ASCII sum modulo
+    ascii_sum = sum(ord(c) for c in text)
+    sum_bit0 = (ascii_sum >> 1) & 1
+    sum_bit1 = ascii_sum & 1
+    
+    # Method 4: Character diversity
+    unique_chars = len(set(text.lower()))
+    div_bit0 = 1 if unique_chars > char_count // 2 else 0
+    div_bit1 = 1 if any(c.isdigit() for c in text) else 0
+    
+    # Default method: Use hash-based (most reliable)
+    final_bit0, final_bit1 = hash_bit0, hash_bit1
+    
+    # Analysis data for display
+    analysis_data = {
+        'text_length': char_count,
+        'unique_chars': unique_chars,
+        'vowel_count': vowel_count,
+        'ascii_sum': ascii_sum,
+        'hash_value': text_hash[:8],
+        'methods': {
+            'Hash-based': f"{hash_bit0}{hash_bit1}",
+            'Frequency': f"{freq_bit0}{freq_bit1}",
+            'ASCII Sum': f"{sum_bit0}{sum_bit1}",
+            'Diversity': f"{div_bit0}{div_bit1}"
+        },
+        'selected_method': 'Hash-based',
+        'final_bits': f"{final_bit0}{final_bit1}"
+    }
+    
+    return final_bit0, final_bit1, analysis_data
+
+def text_to_bits_simple(text):
+    """Simple version for backward compatibility"""
     if not text:
         return 0, 0
-    
-    # Get ASCII value of first character
-    ascii_val = ord(text[0])
-    
-    # Convert to binary and take last 2 bits
-    binary = format(ascii_val, '08b')
-    bit0 = int(binary[-2])  # Second to last bit
-    bit1 = int(binary[-1])  # Last bit
-    
+    bit0, bit1, _ = text_to_bits(text)
     return bit0, bit1
 
 def create_balance_analysis_chart(results_history):
@@ -852,6 +894,137 @@ def create_detailed_balance_stats(results_history):
     stats['max_deviation'] = max_deviation
     
     return stats
+
+def analyze_transmission_balance(results_history):
+    """Analyze transmission balance and return data suitable for DataFrame display"""
+    if not results_history or len(results_history) < 4:
+        return None
+    
+    # Extract bit combinations and metrics
+    combo_data = {}
+    all_combos = ['00', '01', '10', '11']
+    
+    # Initialize data structure
+    for combo in all_combos:
+        combo_data[combo] = {
+            'count': 0,
+            'successes': [],
+            'fidelities': [],
+            'error_rates': []
+        }
+    
+    # Process results history
+    for result in results_history:
+        original_bits = result.get('original_bits', [0, 0])
+        if isinstance(original_bits, (list, tuple)) and len(original_bits) == 2:
+            bit_combo = f"{original_bits[0]}{original_bits[1]}"
+        else:
+            bit_combo = str(original_bits)
+        
+        if bit_combo in combo_data:
+            combo_data[bit_combo]['count'] += 1
+            combo_data[bit_combo]['successes'].append(1 if result.get('success', False) else 0)
+            combo_data[bit_combo]['fidelities'].append(result.get('fidelity', 0))
+            combo_data[bit_combo]['error_rates'].append(result.get('error_rate', 1.0))
+    
+    # Calculate statistics for DataFrame
+    total_runs = sum(data['count'] for data in combo_data.values())
+    expected_count = total_runs / 4  # Perfect balance
+    
+    balance_analysis = []
+    
+    for combo in all_combos:
+        data = combo_data[combo]
+        count = data['count']
+        percentage = (count / total_runs * 100) if total_runs > 0 else 0
+        deviation = abs(percentage - 25.0)  # Deviation from perfect 25%
+        
+        # Calculate performance metrics
+        avg_success = (sum(data['successes']) / len(data['successes']) * 100) if data['successes'] else 0
+        avg_fidelity = sum(data['fidelities']) / len(data['fidelities']) if data['fidelities'] else 0
+        avg_error_rate = sum(data['error_rates']) / len(data['error_rates']) if data['error_rates'] else 1.0
+        
+        # Determine balance status
+        if deviation <= 5:
+            balance_status = "✅ Excellent"
+        elif deviation <= 10:
+            balance_status = "🟡 Good"
+        elif deviation <= 15:
+            balance_status = "🟠 Fair"
+        else:
+            balance_status = "❌ Poor"
+        
+        # Performance rating
+        if avg_success >= 90 and avg_fidelity >= 0.85:
+            performance = "🔥 High"
+        elif avg_success >= 70 and avg_fidelity >= 0.70:
+            performance = "⚡ Medium"
+        else:
+            performance = "⚠️ Low"
+        
+        balance_analysis.append({
+            'Bit Combination': f"|{combo}⟩",
+            'Count': count,
+            'Percentage': f"{percentage:.1f}%",
+            'Deviation': f"{deviation:.1f}%",
+            'Balance Status': balance_status,
+            'Success Rate': f"{avg_success:.1f}%",
+            'Avg Fidelity': f"{avg_fidelity:.3f}",
+            'Performance': performance
+        })
+    
+    return balance_analysis
+
+def get_balance_summary_metrics(results_history):
+    """Get overall balance summary metrics"""
+    if not results_history:
+        return {}
+    
+    balance_data = analyze_transmission_balance(results_history)
+    if not balance_data:
+        return {}
+    
+    # Calculate overall metrics
+    total_runs = sum(int(item['Count']) for item in balance_data)
+    deviations = [float(item['Deviation'].replace('%', '')) for item in balance_data]
+    max_deviation = max(deviations)
+    avg_deviation = sum(deviations) / len(deviations)
+    
+    # Overall balance score (0-100)
+    balance_score = max(0, 100 - (max_deviation * 4))
+    
+    # Balance quality
+    if max_deviation <= 5:
+        balance_quality = "Excellent"
+        quality_color = "🟢"
+    elif max_deviation <= 10:
+        balance_quality = "Good"
+        quality_color = "🟡"
+    elif max_deviation <= 15:
+        balance_quality = "Fair"
+        quality_color = "🟠"
+    else:
+        balance_quality = "Poor"
+        quality_color = "🔴"
+    
+    # Performance metrics
+    success_rates = [float(item['Success Rate'].replace('%', '')) for item in balance_data]
+    fidelities = [float(item['Avg Fidelity']) for item in balance_data]
+    
+    avg_success = sum(success_rates) / len(success_rates)
+    avg_fidelity = sum(fidelities) / len(fidelities)
+    
+    return {
+        'total_runs': total_runs,
+        'balance_score': balance_score,
+        'balance_quality': balance_quality,
+        'quality_color': quality_color,
+        'max_deviation': max_deviation,
+        'avg_deviation': avg_deviation,
+        'avg_success_rate': avg_success,
+        'avg_fidelity': avg_fidelity,
+        'uniformity_index': 100 - avg_deviation  # Higher is more uniform
+    }
 
 def get_scenario_bits(scenario):
     """Map application scenarios to specific bit combinations"""
