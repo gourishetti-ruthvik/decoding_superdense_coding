@@ -4,7 +4,7 @@
 ![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
 ![Qiskit](https://img.shields.io/badge/Qiskit-6929C4?style=for-the-badge&logo=qiskit&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![Academic](https://img.shields.io/badge/Purpose-Academic%20%26%20Educational-orange?style=for-the-badge)
 
 ## 📋 Team Members
 
@@ -191,9 +191,21 @@ We welcome contributions! Please follow these steps:
 - Update documentation as needed
 - Ensure all tests pass before submitting
 
-## 📄 License
+## 📄 License & Usage
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+**🎓 Academic & Educational Use Only**
+
+This project is developed for **academic research and educational purposes only**. It serves as a quantum computing simulator and learning tool for understanding superdense coding protocols.
+
+**📋 Usage Terms:**
+- ✅ **Academic Research**: Permitted for educational institutions and research
+- ✅ **Learning & Teaching**: Can be used in quantum computing courses and workshops  
+- ✅ **Personal Study**: Individual learning and experimentation encouraged
+- ❌ **Commercial Use**: Not licensed for commercial or production applications
+- ❌ **Redistribution**: Please reference original repository for updates
+
+**📚 Citation:**
+If you use this simulator in academic work, please cite this repository and acknowledge the team members listed above.
 
 ## 🙏 Acknowledgments
 
