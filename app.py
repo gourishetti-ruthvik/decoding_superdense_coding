@@ -8,10 +8,10 @@ import time
 from quantum_protocol import SuperdenseCodingProtocol
 from utils import *
 
-# Configure Streamlit with professional settings
+# Configure Streamlit with cosmic quantum settings
 st.set_page_config(
-    page_title="Quantum Superdense Coding Simulator",
-    page_icon="⚛️",
+    page_title="🌌 Quantum Superdense Coding Simulator",
+    page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -29,50 +29,124 @@ st.markdown("""
         color: white;
         text-align: center;
         margin-bottom: 2rem;
-        border: 2px solid rgba(138, 43, 226, 0.3);
-        box-shadow: 0 0 30px rgba(138, 43, 226, 0.4), 
-                    inset 0 0 30px rgba(75, 0, 130, 0.2);
+        box-shadow: 0 0 50px rgba(106, 27, 154, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.1);
     }
     
-    @keyframes quantumGlow {
+    .cosmic-title {
+        background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #06ffa5, #ffbe0b, #ff006e);
+        background-size: 600% 600%;
+        animation: cosmicRainbow 3s ease-in-out infinite;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: bold;
+        text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    }
+    
+    @keyframes cosmicRainbow {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
     }
     
+    @keyframes quantumGlow {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+    
+    .stApp {
+        background: linear-gradient(135deg, #0c0c1e 0%, #1a1a3e 25%, #2d1b69 50%, #1a1a3e 75%, #0c0c1e 100%);
+        background-attachment: fixed;
+    }
+    
     .metric-card {
-        background: linear-gradient(145deg, #1a0826, #2d1b69);
-        padding: 1rem;
-        border-radius: 12px;
-        border: 1px solid rgba(138, 43, 226, 0.4);
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        padding: 1.5rem;
+        border-radius: 15px;
+        border: 2px solid #4fc3f7;
         text-align: center;
-        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
         color: white;
+        box-shadow: 0 0 30px rgba(79, 195, 247, 0.3);
+        animation: pulse 3s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    
+    .quantum-column {
+        background: rgba(29, 35, 82, 0.7);
+        border: 2px solid #00ff88;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 10px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 40px rgba(0, 255, 136, 0.2);
+    }
+    
+    .cosmic-glow {
+        background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #06ffa5);
+        background-size: 400% 400%;
+        animation: cosmicShift 4s ease-in-out infinite;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: bold;
+    }
+    
+    @keyframes cosmicShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
     
     .success-box {
-        background: linear-gradient(135deg, #0d4f3c 0%, #1e7e34 100%);
-        border: 2px solid rgba(40, 167, 69, 0.5);
-        color: #c3e6cb;
-        padding: 1rem;
-        border-radius: 12px;
+        background: linear-gradient(135deg, #00ff88, #00c9a7);
+        border: 2px solid #00ff88;
+        color: #0c0c1e;
+        padding: 1.5rem;
+        border-radius: 15px;
         margin: 1rem 0;
-        box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
+        box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+        font-weight: bold;
+    }
+    
+    .quantum-button {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+    }
+    
+    .quantum-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4);
     }
     
     .sidebar .sidebar-content {
-        background: linear-gradient(180deg, #0f0f23 0%, #1a0826 100%);
+        background: linear-gradient(180deg, #1d2951 0%, #2d1b69 100%);
+        color: white;
     }
     
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background: linear-gradient(90deg, #1a0826, #2d1b69);
+    .stSelectbox > div > div {
+        background-color: rgba(29, 35, 82, 0.8);
+        color: white;
+        border: 2px solid #4fc3f7;
         border-radius: 10px;
-        padding: 5px;
     }
     
-    /* Quantum particle effects */
-    .quantum-particles {
+    .stSlider > div > div > div {
+        background: linear-gradient(90deg, #00ff88, #4fc3f7);
+    }
+    
+    /* Particle effects */
+    .particles {
         position: fixed;
         top: 0;
         left: 0;
@@ -84,7 +158,7 @@ st.markdown("""
     
     .particle {
         position: absolute;
-        background: radial-gradient(circle, #8a2be2 0%, transparent 70%);
+        background: #4fc3f7;
         border-radius: 50%;
         animation: float 6s ease-in-out infinite;
     }
@@ -94,69 +168,60 @@ st.markdown("""
         50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
     }
     
-    /* Cosmic background for main content */
-    .main .block-container {
-        background: linear-gradient(180deg, #0a0a1a 0%, #1a0826 50%, #0f0f23 100%);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-top: 1rem;
-    }
-    
-    /* Enhanced button styling */
-    .stButton > button {
-        background: linear-gradient(45deg, #4a148c, #6a1b9a, #8e24aa);
-        border: 2px solid rgba(138, 43, 226, 0.5);
-        border-radius: 25px;
+    /* Enhanced styling for quantum elements */
+    .quantum-state {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: 2px solid #00ff88;
+        border-radius: 15px;
+        padding: 15px;
+        margin: 10px 0;
         color: white;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+        text-align: center;
+        box-shadow: 0 0 25px rgba(0, 255, 136, 0.3);
     }
     
-    .stButton > button:hover {
-        background: linear-gradient(45deg, #6a1b9a, #8e24aa, #ab47bc);
-        border: 2px solid rgba(138, 43, 226, 0.8);
-        box-shadow: 0 6px 25px rgba(138, 43, 226, 0.5);
-        transform: translateY(-2px);
+    .measurement-result {
+        background: linear-gradient(135deg, #ff006e, #8338ec);
+        border: 2px solid #ff006e;
+        border-radius: 15px;
+        padding: 15px;
+        margin: 10px 0;
+        color: white;
+        text-align: center;
+        box-shadow: 0 0 25px rgba(255, 0, 110, 0.3);
+        animation: resultGlow 2s ease-in-out infinite;
     }
     
-    /* Cosmic text styling */
-    h1, h2, h3 {
-        color: #e1bee7;
-        text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+    @keyframes resultGlow {
+        0%, 100% { box-shadow: 0 0 25px rgba(255, 0, 110, 0.3); }
+        50% { box-shadow: 0 0 40px rgba(255, 0, 110, 0.6); }
     }
     
-    /* Info boxes with cosmic theme */
-    .stAlert {
-        background: linear-gradient(135deg, #1a0826 0%, #2d1b69 100%);
-        border: 1px solid rgba(138, 43, 226, 0.4);
-        border-radius: 12px;
-        color: #e1bee7;
-    }
-    
-    /* Sidebar cosmic styling */
-    .css-1d391kg {
-        background: linear-gradient(180deg, #0f0f23 0%, #1a0826 100%);
-    }
-    
-    /* Metric value styling */
-    .metric-value {
-        color: #ce93d8;
-        font-weight: bold;
-        text-shadow: 0 0 8px rgba(206, 147, 216, 0.6);
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
     }
 </style>
 """, unsafe_allow_html=True)
 
 def main():
-    """Main application with professional UI and fixed functionality"""
+    """Main application with cosmic quantum UI and enhanced functionality"""
     
-    # Professional header
+    # Cosmic Quantum Header
     st.markdown("""
     <div class="main-header">
-        <h1 style="margin: 0; font-size: 2.5em;">⚛️ Quantum Superdense Coding Simulator</h1>
-        <p style="margin: 0.5rem 0 0 0; font-size: 1.2em; opacity: 0.9;">
-            Advanced Quantum Communication Protocol Demonstration
+        <div style="margin-bottom: 1rem;">
+            <span style="font-size: 4em; filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));">⚛️</span>
+            <span style="font-size: 3.5em; margin: 0 20px; filter: drop-shadow(0 0 20px rgba(79, 195, 247, 0.8));">🌌</span>
+            <span style="font-size: 4em; filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));">⚛️</span>
+        </div>
+        <h1 style="margin: 0; font-size: 3.2em; color: white; text-shadow: 0 0 20px rgba(79, 195, 247, 0.8);">
+            QUANTUM SUPERDENSE CODING
+        </h1>
+        <p style="margin: 0.5rem 0 0 0; font-size: 1.2em; color: #00ff88; text-shadow: 0 0 10px rgba(0, 255, 136, 0.6);">
+            🔬 Advanced Quantum Communication Protocol 🔬
+        </p>
+        <p style="margin: 0.3rem 0 0 0; font-size: 1em; color: #ffffff; text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);">
+            Experience the infinite power of quantum information.
         </p>
     </div>
     """, unsafe_allow_html=True)
