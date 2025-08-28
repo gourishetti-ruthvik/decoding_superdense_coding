@@ -1,6 +1,6 @@
 """
 Professional Superdense Coding Simulator
-FIXED VERSION - MAYBE All Issues Resolved
+FIXED VERSION - All Issues Resolved
 """
 
 import streamlit as st
