@@ -2,6 +2,7 @@
 """
 Test script to debug text transmission validation issues
 """
+#Tests for superdense Coding Protocol implementation
 
 import sys
 import os
@@ -10,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from quantum_protocol import SuperdenseCodingProtocol
 import hashlib
 
+# Function to convert text to bits using various methods
 def text_to_bits_hash_based(text, method="hash"):
     """Convert text to bits using hash-based method (same as in app.py)"""
     if method == "hash":
@@ -17,6 +19,7 @@ def text_to_bits_hash_based(text, method="hash"):
         bit1 = (hash_val >> 0) & 1
         bit0 = (hash_val >> 1) & 1
         return [bit0, bit1]
+    #Should return [1, 0] for input bits [1, 0]
     elif method == "frequency":
         char_freq = {}
         for char in text:
