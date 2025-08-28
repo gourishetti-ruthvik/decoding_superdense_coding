@@ -16,41 +16,134 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for professional styling
+# Custom CSS for quantum cosmic styling
 st.markdown("""
 <style>
+    /* Quantum Cosmic Theme */
     .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #0f0f23 0%, #1a0826 25%, #2d1b69 50%, #4a148c 75%, #6a1b9a 100%);
+        background-size: 400% 400%;
+        animation: quantumGlow 8s ease-in-out infinite;
         padding: 2rem;
-        border-radius: 10px;
+        border-radius: 15px;
         color: white;
         text-align: center;
         margin-bottom: 2rem;
+        border: 2px solid rgba(138, 43, 226, 0.3);
+        box-shadow: 0 0 30px rgba(138, 43, 226, 0.4), 
+                    inset 0 0 30px rgba(75, 0, 130, 0.2);
+    }
+    
+    @keyframes quantumGlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
     
     .metric-card {
-        background: white;
+        background: linear-gradient(145deg, #1a0826, #2d1b69);
         padding: 1rem;
-        border-radius: 8px;
-        border: 1px solid #e1e8ed;
+        border-radius: 12px;
+        border: 1px solid rgba(138, 43, 226, 0.4);
         text-align: center;
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
+        color: white;
     }
     
     .success-box {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724;
+        background: linear-gradient(135deg, #0d4f3c 0%, #1e7e34 100%);
+        border: 2px solid rgba(40, 167, 69, 0.5);
+        color: #c3e6cb;
         padding: 1rem;
-        border-radius: 8px;
+        border-radius: 12px;
         margin: 1rem 0;
+        box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
     }
     
     .sidebar .sidebar-content {
-        background-color: #f8f9fa;
+        background: linear-gradient(180deg, #0f0f23 0%, #1a0826 100%);
     }
     
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
+        background: linear-gradient(90deg, #1a0826, #2d1b69);
+        border-radius: 10px;
+        padding: 5px;
+    }
+    
+    /* Quantum particle effects */
+    .quantum-particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+    }
+    
+    .particle {
+        position: absolute;
+        background: radial-gradient(circle, #8a2be2 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+        50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+    }
+    
+    /* Cosmic background for main content */
+    .main .block-container {
+        background: linear-gradient(180deg, #0a0a1a 0%, #1a0826 50%, #0f0f23 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-top: 1rem;
+    }
+    
+    /* Enhanced button styling */
+    .stButton > button {
+        background: linear-gradient(45deg, #4a148c, #6a1b9a, #8e24aa);
+        border: 2px solid rgba(138, 43, 226, 0.5);
+        border-radius: 25px;
+        color: white;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(45deg, #6a1b9a, #8e24aa, #ab47bc);
+        border: 2px solid rgba(138, 43, 226, 0.8);
+        box-shadow: 0 6px 25px rgba(138, 43, 226, 0.5);
+        transform: translateY(-2px);
+    }
+    
+    /* Cosmic text styling */
+    h1, h2, h3 {
+        color: #e1bee7;
+        text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+    }
+    
+    /* Info boxes with cosmic theme */
+    .stAlert {
+        background: linear-gradient(135deg, #1a0826 0%, #2d1b69 100%);
+        border: 1px solid rgba(138, 43, 226, 0.4);
+        border-radius: 12px;
+        color: #e1bee7;
+    }
+    
+    /* Sidebar cosmic styling */
+    .css-1d391kg {
+        background: linear-gradient(180deg, #0f0f23 0%, #1a0826 100%);
+    }
+    
+    /* Metric value styling */
+    .metric-value {
+        color: #ce93d8;
+        font-weight: bold;
+        text-shadow: 0 0 8px rgba(206, 147, 216, 0.6);
     }
 </style>
 """, unsafe_allow_html=True)

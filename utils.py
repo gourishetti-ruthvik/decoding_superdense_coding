@@ -7,6 +7,8 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 import streamlit as st
+import numpy as np
+import time
 
 def format_bits_display(bits):
     """Format bits for nice display"""
@@ -15,86 +17,145 @@ def format_bits_display(bits):
     return str(bits)
 
 def create_info_box(title, content, icon="ℹ️"):
-    """Create a professional info box"""
+    """Create a cosmic-themed info box"""
+    # Determine box style based on content type
+    if "success" in str(content).lower() or "✅" in content:
+        gradient = "linear-gradient(135deg, #0d4f3c 0%, #1e7e34 50%, #2d8f4f 100%)"
+        border_color = "#00b894"
+        glow_color = "rgba(0, 184, 148, 0.4)"
+    elif "warning" in str(content).lower() or "⚠️" in content:
+        gradient = "linear-gradient(135deg, #8b5a00 0%, #d68910 50%, #f4d03f 100%)"
+        border_color = "#fdcb6e"
+        glow_color = "rgba(253, 203, 110, 0.4)"
+    elif "error" in str(content).lower() or "❌" in content:
+        gradient = "linear-gradient(135deg, #8b1538 0%, #c0392b 50%, #e74c3c 100%)"
+        border_color = "#ff7675"
+        glow_color = "rgba(255, 118, 117, 0.4)"
+    else:
+        gradient = "linear-gradient(135deg, #0f0f23 0%, #1a0826 25%, #2d1b69 50%, #4a148c 75%, #6a1b9a 100%)"
+        border_color = "#8a2be2"
+        glow_color = "rgba(138, 43, 226, 0.4)"
+    
     st.markdown(f"""
     <div style="
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: {gradient};
+        background-size: 400% 400%;
+        animation: cosmicPulse 6s ease-in-out infinite;
         padding: 20px;
-        border-radius: 10px;
-        border-left: 5px solid #4CAF50;
-        margin: 10px 0;
+        border-radius: 15px;
+        border: 2px solid {border_color};
+        margin: 15px 0;
+        box-shadow: 0 0 25px {glow_color}, 
+                    inset 0 0 25px rgba(255, 255, 255, 0.1);
     ">
-        <h3 style="color: white; margin: 0 0 10px 0;">{icon} {title}</h3>
-        <p style="color: white; margin: 0; line-height: 1.6;">{content}</p>
+        <h3 style="color: #e1bee7; margin: 0 0 12px 0; text-shadow: 0 0 10px rgba(225, 190, 231, 0.6);">
+            {icon} {title}
+        </h3>
+        <p style="color: #e1bee7; margin: 0; line-height: 1.6; text-shadow: 0 0 5px rgba(225, 190, 231, 0.3);">
+            {content}
+        </p>
     </div>
+    <style>
+    @keyframes cosmicPulse {{
+        0%, 100% {{ background-position: 0% 50%; }}
+        50% {{ background-position: 100% 50%; }}
+    }}
+    </style>
     """, unsafe_allow_html=True)
 
 def create_security_gauge(security_score, chsh_value=2.5):
-    """Create a security level gauge"""
+    """Create a cosmic security level gauge"""
     fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
         value = security_score * 100,
         domain = {'x': [0, 1], 'y': [0, 1]},
-        title = {'text': "Security Level"},
-        delta = {'reference': 80},
+        title = {'text': "🛡️ Quantum Security Level", 
+                'font': {'color': '#e1bee7', 'size': 14}},
+        delta = {'reference': 80, 'font': {'color': '#ce93d8'}},
+        number = {'font': {'color': '#e1bee7', 'size': 20}},
         gauge = {
-            'axis': {'range': [None, 100]},
-            'bar': {'color': "darkblue"},
+            'axis': {'range': [None, 100], 'tickcolor': '#e1bee7'},
+            'bar': {'color': "#4ecdc4", 'thickness': 0.8},
             'steps': [
-                {'range': [0, 50], 'color': "lightgray"},
-                {'range': [50, 80], 'color': "yellow"},
-                {'range': [80, 100], 'color': "green"}],
+                {'range': [0, 50], 'color': "rgba(255, 118, 117, 0.3)"},
+                {'range': [50, 80], 'color': "rgba(253, 203, 110, 0.3)"},
+                {'range': [80, 100], 'color': "rgba(78, 205, 196, 0.3)"}],
             'threshold': {
-                'line': {'color': "red", 'width': 4},
+                'line': {'color': "#ff7675", 'width': 4},
                 'thickness': 0.75,
                 'value': 90}}))
     
     fig.update_layout(
         template='plotly_dark',
         height=250,
-        font=dict(size=12)
+        font=dict(size=12, color='#e1bee7'),
+        paper_bgcolor='rgba(15, 15, 35, 0.9)',
+        plot_bgcolor='rgba(26, 8, 38, 0.9)'
     )
     
-    # Determine security level based on both metrics
+    # Determine security level based on both metrics with cosmic emojis
     if security_score > 0.8 and chsh_value > 2.0:
-        level = "High"
+        level = "🌟 Ultra High"
     elif security_score > 0.5:
-        level = "Medium"
+        level = "✨ Medium"
     else:
-        level = "Low"
+        level = "⚠️ Low"
     
     return fig, level
 
 def create_channel_quality_indicator(noise_level, fidelity):
-    """Create a channel quality indicator"""
+    """Create a cosmic channel quality indicator"""
     quality_score = (1 - noise_level) * fidelity * 100
     
     if quality_score > 80:
-        color = "🟢"
-        status = "Excellent"
+        color = "🌟"
+        status = "Quantum Excellence"
+        gradient = "linear-gradient(90deg, rgba(78,205,196,0.4) 0%, rgba(0,184,148,0.6) 100%)"
+        border_color = "#00b894"
     elif quality_score > 60:
-        color = "🟡"  
-        status = "Good"
+        color = "✨"  
+        status = "Cosmic Good"
+        gradient = "linear-gradient(90deg, rgba(253,203,110,0.4) 0%, rgba(230,126,34,0.6) 100%)"
+        border_color = "#fdcb6e"
     elif quality_score > 40:
-        color = "🟠"
-        status = "Fair"
+        color = "�"
+        status = "Mystical Fair"
+        gradient = "linear-gradient(90deg, rgba(162,155,254,0.4) 0%, rgba(108,92,231,0.6) 100%)"
+        border_color = "#a29bfe"
     else:
-        color = "🔴"
-        status = "Poor"
+        color = "�"
+        status = "Nebula Challenge"
+        gradient = "linear-gradient(90deg, rgba(255,118,117,0.4) 0%, rgba(231,76,60,0.6) 100%)"
+        border_color = "#ff7675"
     
     st.markdown(f"""
     <div style="
-        padding: 15px;
-        border-radius: 8px;
-        background: linear-gradient(90deg, rgba(75,192,192,0.3) 0%, rgba(153,102,255,0.3) 100%);
-        border: 2px solid {color.replace('🟢', '#4CAF50').replace('🟡', '#FFC107').replace('🟠', '#FF9800').replace('🔴', '#F44336')};
+        padding: 20px;
+        border-radius: 15px;
+        background: {gradient};
+        border: 2px solid {border_color};
         text-align: center;
-        margin: 10px 0;
+        margin: 15px 0;
+        box-shadow: 0 0 20px rgba(138, 43, 226, 0.3), 
+                    inset 0 0 20px rgba(255, 255, 255, 0.1);
+        animation: cosmicGlow 4s ease-in-out infinite;
     ">
-        <h4>{color} Channel Quality: {status}</h4>
-        <p><strong>Score:</strong> {quality_score:.1f}/100</p>
-        <p><strong>Noise Level:</strong> {noise_level:.3f} | <strong>Fidelity:</strong> {fidelity:.3f}</p>
+        <h4 style="color: #e1bee7; text-shadow: 0 0 10px rgba(225, 190, 231, 0.6);">
+            {color} Channel Quality: {status}
+        </h4>
+        <p style="color: #e1bee7; margin: 5px 0;">
+            <strong>Cosmic Score:</strong> {quality_score:.1f}/100 ⭐
+        </p>
+        <p style="color: #e1bee7; margin: 5px 0;">
+            <strong>Noise Level:</strong> {noise_level:.3f} | <strong>Fidelity:</strong> {fidelity:.3f}
+        </p>
     </div>
+    <style>
+    @keyframes cosmicGlow {{
+        0%, 100% {{ box-shadow: 0 0 20px rgba(138, 43, 226, 0.3); }}
+        50% {{ box-shadow: 0 0 30px rgba(138, 43, 226, 0.6); }}
+    }}
+    </style>
     """, unsafe_allow_html=True)
 
 def display_protocol_steps(steps):
@@ -109,17 +170,208 @@ def display_protocol_steps(steps):
     
     st.success("✅ Protocol execution completed successfully!")
 
+def create_bloch_sphere_visualization(bit0, bit1):
+    """
+    Create a 3D Bloch sphere visualization showing the quantum state representation
+    for the given bit combination in superdense coding protocol with cosmic theme
+    
+    Args:
+        bit0: First bit (controls Z gate)
+        bit1: Second bit (controls X gate)
+    
+    Returns:
+        plotly.graph_objects.Figure: 3D Bloch sphere visualization with cosmic colors
+    """
+    
+    # Create the Bloch sphere (unit sphere)
+    u = np.linspace(0, 2 * np.pi, 50)
+    v = np.linspace(0, np.pi, 50)
+    x_sphere = np.outer(np.cos(u), np.sin(v))
+    y_sphere = np.outer(np.sin(u), np.sin(v))
+    z_sphere = np.outer(np.ones(np.size(u)), np.cos(v))
+    
+    # Create the figure with cosmic background
+    fig = go.Figure()
+    
+    # Add the Bloch sphere surface with cosmic transparency
+    fig.add_trace(go.Surface(
+        x=x_sphere, y=y_sphere, z=z_sphere,
+        colorscale=[[0, 'rgba(26, 8, 38, 0.4)'], [1, 'rgba(138, 43, 226, 0.6)']],
+        opacity=0.4,
+        showscale=False,
+        name="Cosmic Bloch Sphere"
+    ))
+    
+    # Define quantum state vectors based on bit combination with cosmic colors
+    state_info = {
+        (0, 0): {
+            'name': '|Φ⁺⟩ Bell State',
+            'description': 'Identity operation (I)',
+            'color': '#4ecdc4',  # Cosmic teal
+            'position': (0, 0, 1),  # |+Z⟩ representation
+            'encoding': 'No gates applied'
+        },
+        (0, 1): {
+            'name': '|Ψ⁺⟩ Bell State', 
+            'description': 'Bit flip operation (X)',
+            'color': '#a29bfe',  # Cosmic purple
+            'position': (1, 0, 0),  # |+X⟩ representation
+            'encoding': 'X gate applied'
+        },
+        (1, 0): {
+            'name': '|Φ⁻⟩ Bell State',
+            'description': 'Phase flip operation (Z)', 
+            'color': '#fd79a8',  # Cosmic pink
+            'position': (0, 0, -1),  # |-Z⟩ representation
+            'encoding': 'Z gate applied'
+        },
+        (1, 1): {
+            'name': '|Ψ⁻⟩ Bell State',
+            'description': 'Both operations (XZ)',
+            'color': '#fdcb6e',  # Cosmic gold
+            'position': (-1, 0, 0),  # |-X⟩ representation
+            'encoding': 'X and Z gates applied'
+        }
+    }
+    
+    current_state = state_info[(bit0, bit1)]
+    x, y, z = current_state['position']
+    
+    # Add the quantum state vector with cosmic glow
+    fig.add_trace(go.Scatter3d(
+        x=[0, x], y=[0, y], z=[0, z],
+        mode='lines+markers',
+        line=dict(color=current_state['color'], width=12),
+        marker=dict(size=[8, 18], color=[current_state['color'], current_state['color']],
+                   line=dict(width=3, color='rgba(255, 255, 255, 0.8)')),
+        name=f"State Vector: {current_state['name']}"
+    ))
+    
+    # Add state point with cosmic effects
+    fig.add_trace(go.Scatter3d(
+        x=[x], y=[y], z=[z],
+        mode='markers+text',
+        marker=dict(size=20, color=current_state['color'], 
+                   line=dict(width=3, color='rgba(255, 255, 255, 0.9)'),
+                   opacity=0.9),
+        text=[f"✨{current_state['name']}<br>🔮 Bits: {bit0}{bit1}"],
+        textposition="top center",
+        textfont=dict(size=11, color='#e1bee7'),
+        name="Current State"
+    ))
+    
+    # Add coordinate axes with cosmic colors
+    # X-axis (cosmic red)
+    fig.add_trace(go.Scatter3d(
+        x=[-1.2, 1.2], y=[0, 0], z=[0, 0],
+        mode='lines',
+        line=dict(color='#ff7675', width=6),
+        name="X-axis"
+    ))
+    
+    # Y-axis (cosmic green)  
+    fig.add_trace(go.Scatter3d(
+        x=[0, 0], y=[-1.2, 1.2], z=[0, 0],
+        mode='lines',
+        line=dict(color='#00b894', width=6),
+        name="Y-axis"
+    ))
+    
+    # Z-axis (cosmic blue)
+    fig.add_trace(go.Scatter3d(
+        x=[0, 0], y=[0, 0], z=[-1.2, 1.2],
+        mode='lines',
+        line=dict(color='#74b9ff', width=6),
+        name="Z-axis"
+    ))
+    
+    # Add axis labels with cosmic styling
+    fig.add_trace(go.Scatter3d(
+        x=[1.3], y=[0], z=[0],
+        mode='text',
+        text=['X'],
+        textfont=dict(size=16, color='#ff7675'),
+        showlegend=False
+    ))
+    
+    fig.add_trace(go.Scatter3d(
+        x=[0], y=[1.3], z=[0],
+        mode='text', 
+        text=['Y'],
+        textfont=dict(size=16, color='#00b894'),
+        showlegend=False
+    ))
+    
+    fig.add_trace(go.Scatter3d(
+        x=[0], y=[0], z=[1.3],
+        mode='text',
+        text=['Z'],
+        textfont=dict(size=16, color='#74b9ff'),
+        showlegend=False
+    ))
+    
+    # Add north and south pole labels with cosmic styling
+    fig.add_trace(go.Scatter3d(
+        x=[0], y=[0], z=[1.15],
+        mode='text',
+        text=['⬆️ |0⟩'],
+        textfont=dict(size=14, color='#e1bee7'),
+        showlegend=False
+    ))
+    
+    fig.add_trace(go.Scatter3d(
+        x=[0], y=[0], z=[-1.15],
+        mode='text',
+        text=['⬇️ |1⟩'],
+        textfont=dict(size=14, color='#e1bee7'),
+        showlegend=False
+    ))
+    
+    # Update layout with cosmic theme
+    fig.update_layout(
+        title=f"🌌 Cosmic Bloch Sphere: {current_state['name']}<br>"
+              f"<sub>✨ Encoding: {current_state['encoding']} | 🔮 Message: {bit0}{bit1}</sub>",
+        scene=dict(
+            xaxis=dict(title='X', range=[-1.5, 1.5], 
+                      showgrid=True, gridcolor='rgba(138, 43, 226, 0.4)',
+                      backgroundcolor='rgba(15, 15, 35, 0.8)',
+                      tickfont=dict(color='#e1bee7')),
+            yaxis=dict(title='Y', range=[-1.5, 1.5], 
+                      showgrid=True, gridcolor='rgba(138, 43, 226, 0.4)',
+                      backgroundcolor='rgba(15, 15, 35, 0.8)',
+                      tickfont=dict(color='#e1bee7')),
+            zaxis=dict(title='Z', range=[-1.5, 1.5], 
+                      showgrid=True, gridcolor='rgba(138, 43, 226, 0.4)',
+                      backgroundcolor='rgba(15, 15, 35, 0.8)',
+                      tickfont=dict(color='#e1bee7')),
+            bgcolor='rgba(15, 15, 35, 0.9)',
+            camera=dict(
+                eye=dict(x=1.8, y=1.8, z=1.8)
+            ),
+            aspectmode='cube'
+        ),
+        template='plotly_dark',
+        height=500,
+        showlegend=False,
+        font=dict(size=11, color='#e1bee7'),
+        title_font=dict(size=14, color='#ce93d8'),
+        paper_bgcolor='rgba(15, 15, 35, 0.9)',
+        margin=dict(l=0, r=0, t=80, b=0)
+    )
+    
+    return fig, current_state
+
 def create_efficiency_chart():
-    """Create professional communication efficiency comparison chart"""
+    """Create professional communication efficiency comparison chart with cosmic theme"""
     fig = go.Figure(data=[
         go.Bar(
             name='Communication Efficiency',
             x=['Classical Protocol', 'Superdense Coding'],
             y=[1, 2],
-            marker_color=['#E74C3C', '#2ECC71'],
+            marker_color=['#ff6b6b', '#4ecdc4'],  # Cosmic red and teal
             text=['1 bit', '2 bits'],
             textposition='outside',
-            textfont=dict(size=16, color='white'),
+            textfont=dict(size=16, color='#e1bee7'),
         )
     ])
     
@@ -130,16 +382,20 @@ def create_efficiency_chart():
         template='plotly_dark',
         height=400,
         showlegend=False,
-        font=dict(size=14),
-        title_font=dict(size=18),
+        font=dict(size=14, color='#e1bee7'),
+        title_font=dict(size=18, color='#ce93d8'),
+        paper_bgcolor='rgba(15, 15, 35, 0.9)',
+        plot_bgcolor='rgba(26, 8, 38, 0.9)',
         xaxis=dict(
-            tickfont=dict(size=14),
-            title_font=dict(size=16)
+            tickfont=dict(size=14, color='#e1bee7'),
+            title_font=dict(size=16, color='#ce93d8'),
+            gridcolor='rgba(138, 43, 226, 0.3)'
         ),
         yaxis=dict(
-            tickfont=dict(size=14),
-            title_font=dict(size=16),
-            range=[0, 2.5]
+            tickfont=dict(size=14, color='#e1bee7'),
+            title_font=dict(size=16, color='#ce93d8'),
+            range=[0, 2.5],
+            gridcolor='rgba(138, 43, 226, 0.3)'
         )
     )
     
@@ -148,9 +404,9 @@ def create_efficiency_chart():
         text="Standard<br>Classical",
         showarrow=False,
         font=dict(size=12, color='white'),
-        bgcolor='rgba(231, 76, 60, 0.7)',
-        bordercolor='white',
-        borderwidth=1
+        bgcolor='rgba(255, 107, 107, 0.8)',
+        bordercolor='#ff6b6b',
+        borderwidth=2
     )
     
     fig.add_annotation(
@@ -158,15 +414,15 @@ def create_efficiency_chart():
         text="Quantum<br>Advantage",
         showarrow=False,
         font=dict(size=12, color='white'),
-        bgcolor='rgba(46, 204, 113, 0.7)',
-        bordercolor='white',
-        borderwidth=1
+        bgcolor='rgba(78, 205, 196, 0.8)',
+        bordercolor='#4ecdc4',
+        borderwidth=2
     )
     
     return fig
 
 def create_measurement_chart(measurement_counts):
-    """Create enhanced measurement results chart with validation insights"""
+    """Create enhanced measurement results chart with cosmic validation insights"""
     if not measurement_counts:
         return None
     
@@ -178,25 +434,26 @@ def create_measurement_chart(measurement_counts):
     probabilities = [count/total_shots for count in counts]
     max_count = max(counts)
     
-    # Color coding based on measurement confidence
+    # Cosmic color coding based on measurement confidence
     colors = []
     for count in counts:
         if count == max_count:
-            colors.append('#2ECC71')  # Green for primary state
+            colors.append('#4ecdc4')  # Cosmic teal for primary state
         elif count > total_shots * 0.1:  # More than 10% suggests significant presence
-            colors.append('#F39C12')  # Orange for secondary states
+            colors.append('#a29bfe')  # Cosmic purple for secondary states
         else:
-            colors.append('#E74C3C')  # Red for noise/error states
+            colors.append('#ff7675')  # Cosmic coral for noise/error states
     
-    # Create professional bar chart
+    # Create cosmic bar chart
     fig = go.Figure(data=[
         go.Bar(
             x=[f"|{state}⟩" for state in states],
             y=counts,
             marker_color=colors,
+            marker_line=dict(color='rgba(138, 43, 226, 0.8)', width=2),
             text=[f"{count}<br>({prob:.1%})" for count, prob in zip(counts, probabilities)],
             textposition='outside',
-            textfont=dict(size=12, color='white'),
+            textfont=dict(size=12, color='#e1bee7'),
             hovertemplate='<b>State:</b> |%{x}⟩<br>' +
                          '<b>Count:</b> %{y}<br>' +
                          '<b>Probability:</b> %{customdata:.3f}<br>' +
@@ -206,77 +463,94 @@ def create_measurement_chart(measurement_counts):
     ])
     
     fig.update_layout(
-        title='Quantum State Measurement Distribution',
+        title='🌌 Quantum State Measurement Distribution',
         xaxis_title='Quantum States',
         yaxis_title='Measurement Count',
         template='plotly_dark',
         height=450,
         showlegend=False,
-        font=dict(size=12),
-        title_font=dict(size=16),
+        font=dict(size=12, color='#e1bee7'),
+        title_font=dict(size=16, color='#ce93d8'),
+        paper_bgcolor='rgba(15, 15, 35, 0.9)',
+        plot_bgcolor='rgba(26, 8, 38, 0.9)',
         xaxis=dict(
-            tickfont=dict(size=12),
-            title_font=dict(size=14)
+            tickfont=dict(size=12, color='#e1bee7'),
+            title_font=dict(size=14, color='#ce93d8'),
+            gridcolor='rgba(138, 43, 226, 0.3)'
         ),
         yaxis=dict(
-            tickfont=dict(size=12),
-            title_font=dict(size=14)
+            tickfont=dict(size=12, color='#e1bee7'),
+            title_font=dict(size=14, color='#ce93d8'),
+            gridcolor='rgba(138, 43, 226, 0.3)'
         )
     )
     
-    # Add validation annotations
+    # Add cosmic validation annotations
     primary_state = states[counts.index(max_count)]
     confidence = max_count / total_shots * 100
     
     fig.add_annotation(
         x=len(states)-1, y=max(counts) * 0.8,
-        text=f"Primary: |{primary_state}⟩<br>Confidence: {confidence:.1f}%",
+        text=f"✨ Primary: |{primary_state}⟩<br>🎯 Confidence: {confidence:.1f}%",
         showarrow=True,
         arrowhead=2,
-        arrowcolor='white',
+        arrowcolor='#4ecdc4',
         font=dict(size=11, color='white'),
-        bgcolor='rgba(46, 204, 113, 0.8)',
-        bordercolor='white',
-        borderwidth=1
+        bgcolor='rgba(78, 205, 196, 0.8)',
+        bordercolor='#4ecdc4',
+        borderwidth=2
     )
     
     return fig
 
 def create_channel_status_chart(noise_level, fidelity, error_rate):
-    """Create real-time channel status visualization"""
+    """Create real-time channel status visualization with cosmic theme"""
     # Channel quality metrics
     metrics = ['Noise Level', 'Fidelity', 'Error Rate']
     values = [noise_level * 100, fidelity * 100, (1 - error_rate) * 100]
     
-    # Color coding based on performance
+    # Cosmic color coding based on performance
     colors = []
     for i, value in enumerate(values):
         if i == 0:  # Noise level (lower is better)
-            colors.append('#E74C3C' if value > 30 else '#F39C12' if value > 15 else '#2ECC71')
+            colors.append('#ff7675' if value > 30 else '#fdcb6e' if value > 15 else '#00b894')
         else:  # Fidelity and Success Rate (higher is better)
-            colors.append('#2ECC71' if value > 80 else '#F39C12' if value > 60 else '#E74C3C')
+            colors.append('#00b894' if value > 80 else '#fdcb6e' if value > 60 else '#ff7675')
     
     fig = go.Figure(data=[
         go.Bar(
             x=metrics,
             y=values,
             marker_color=colors,
+            marker_line=dict(color='rgba(138, 43, 226, 0.8)', width=2),
             text=[f"{value:.1f}%" for value in values],
             textposition='outside',
-            textfont=dict(size=14, color='white'),
+            textfont=dict(size=14, color='#e1bee7'),
         )
     ])
     
     fig.update_layout(
-        title='Real-time Channel Performance',
+        title='🚀 Real-time Channel Performance',
         xaxis_title='Performance Metrics',
         yaxis_title='Percentage (%)',
         template='plotly_dark',
         height=350,
         showlegend=False,
-        font=dict(size=12),
-        title_font=dict(size=16),
-        yaxis=dict(range=[0, 100])
+        font=dict(size=12, color='#e1bee7'),
+        title_font=dict(size=16, color='#ce93d8'),
+        paper_bgcolor='rgba(15, 15, 35, 0.9)',
+        plot_bgcolor='rgba(26, 8, 38, 0.9)',
+        xaxis=dict(
+            tickfont=dict(size=12, color='#e1bee7'),
+            title_font=dict(size=14, color='#ce93d8'),
+            gridcolor='rgba(138, 43, 226, 0.3)'
+        ),
+        yaxis=dict(
+            range=[0, 100],
+            tickfont=dict(size=12, color='#e1bee7'),
+            title_font=dict(size=14, color='#ce93d8'),
+            gridcolor='rgba(138, 43, 226, 0.3)'
+        )
     )
     
     return fig
@@ -546,7 +820,7 @@ def create_quantum_circuit_display():
     return fig
 
 def create_performance_chart(results_history):
-    """Create performance analytics chart from protocol results history"""
+    """Create performance analytics chart from protocol results history with cosmic theme"""
     if not results_history or len(results_history) < 2:
         return None
     
@@ -566,19 +840,19 @@ def create_performance_chart(results_history):
         running_success.append(sum(success_rates[:i+1]) / (i+1))
         running_error.append(sum(error_rates[:i+1]) / (i+1))
     
-    # Create subplot figure
+    # Create cosmic subplot figure
     fig = go.Figure()
     
-    # Add fidelity trace
+    # Add fidelity trace with cosmic colors
     fig.add_trace(go.Scatter(
         x=iterations,
         y=fidelities,
         mode='lines+markers',
-        name='Fidelity',
-        line=dict(color='#2ECC71', width=3),
-        marker=dict(size=8),
-        hovertemplate='<b>Run %{x}</b><br>' +
-                     'Fidelity: %{y:.3f}<br>' +
+        name='🌟 Fidelity',
+        line=dict(color='#4ecdc4', width=3),
+        marker=dict(size=8, line=dict(width=2, color='rgba(255,255,255,0.8)')),
+        hovertemplate='<b>🚀 Run %{x}</b><br>' +
+                     '🌟 Fidelity: %{y:.3f}<br>' +
                      '<extra></extra>'
     ))
     
@@ -587,10 +861,10 @@ def create_performance_chart(results_history):
         x=iterations,
         y=running_fidelity,
         mode='lines',
-        name='Avg Fidelity',
-        line=dict(color='#27AE60', width=2, dash='dash'),
-        hovertemplate='<b>Run %{x}</b><br>' +
-                     'Average Fidelity: %{y:.3f}<br>' +
+        name='📈 Avg Fidelity',
+        line=dict(color='#00b894', width=2, dash='dash'),
+        hovertemplate='<b>🚀 Run %{x}</b><br>' +
+                     '📈 Average Fidelity: %{y:.3f}<br>' +
                      '<extra></extra>'
     ))
     
@@ -599,12 +873,12 @@ def create_performance_chart(results_history):
         x=iterations,
         y=success_rates,
         mode='lines+markers',
-        name='Success Rate',
-        line=dict(color='#3498DB', width=3),
-        marker=dict(size=8),
+        name='✨ Success Rate',
+        line=dict(color='#a29bfe', width=3),
+        marker=dict(size=8, line=dict(width=2, color='rgba(255,255,255,0.8)')),
         yaxis='y2',
-        hovertemplate='<b>Run %{x}</b><br>' +
-                     'Success: %{y}<br>' +
+        hovertemplate='<b>🚀 Run %{x}</b><br>' +
+                     '✨ Success: %{y}<br>' +
                      '<extra></extra>'
     ))
     
@@ -613,60 +887,54 @@ def create_performance_chart(results_history):
         x=iterations,
         y=running_success,
         mode='lines',
-        name='Avg Success',
-        line=dict(color='#2980B9', width=2, dash='dash'),
+        name='🎯 Avg Success',
+        line=dict(color='#6c5ce7', width=2, dash='dash'),
         yaxis='y2',
-        hovertemplate='<b>Run %{x}</b><br>' +
-                     'Average Success: %{y:.3f}<br>' +
+        hovertemplate='<b>🚀 Run %{x}</b><br>' +
+                     '🎯 Average Success: %{y:.3f}<br>' +
                      '<extra></extra>'
     ))
     
-    # Update layout for dual y-axis
+    # Update layout for dual y-axis with cosmic theme
     fig.update_layout(
-        title='Protocol Performance Analytics',
+        title='🌌 Protocol Performance Analytics',
         xaxis_title='Protocol Execution #',
         yaxis=dict(
-            title='Fidelity',
-            title_font=dict(color='#2ECC71'),
-            tickfont=dict(color='#2ECC71'),
-            range=[0, 1]
+            title='🌟 Fidelity',
+            title_font=dict(color='#4ecdc4'),
+            tickfont=dict(color='#4ecdc4'),
+            range=[0, 1],
+            gridcolor='rgba(138, 43, 226, 0.3)'
         ),
         yaxis2=dict(
-            title='Success Rate',
-            title_font=dict(color='#3498DB'),
-            tickfont=dict(color='#3498DB'),
+            title='✨ Success Rate',
+            title_font=dict(color='#a29bfe'),
+            tickfont=dict(color='#a29bfe'),
             overlaying='y',
             side='right',
-            range=[0, 1]
+            range=[0, 1],
+            gridcolor='rgba(138, 43, 226, 0.3)'
         ),
         template='plotly_dark',
         height=450,
         hovermode='x unified',
+        font=dict(size=12, color='#e1bee7'),
+        title_font=dict(size=16, color='#ce93d8'),
+        paper_bgcolor='rgba(15, 15, 35, 0.9)',
+        plot_bgcolor='rgba(26, 8, 38, 0.9)',
         legend=dict(
             orientation="h",
             yanchor="bottom",
             y=1.02,
             xanchor="right",
-            x=1
+            x=1,
+            font=dict(color='#e1bee7')
         )
     )
     
-    # Add performance annotations
+    # Add cosmic performance annotations
     avg_fidelity = sum(fidelities) / len(fidelities)
     avg_success = sum(success_rates) / len(success_rates)
-    
-    fig.add_annotation(
-        x=len(iterations) * 0.7,
-        y=avg_fidelity,
-        text=f"Avg Fidelity: {avg_fidelity:.3f}",
-        showarrow=True,
-        arrowhead=2,
-        arrowcolor='#2ECC71',
-        bgcolor='rgba(46, 204, 113, 0.8)',
-        bordercolor='white',
-        borderwidth=1,
-        font=dict(color='white', size=12)
-    )
     
     return fig
 
