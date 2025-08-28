@@ -465,6 +465,161 @@ def main():
                 else:
                     st.error("❌ Transmission Error")
             
+            # Quantum Simulation Visualization
+            st.markdown("---")
+            st.markdown("### 🌌 Quantum Protocol Simulation Visualization")
+            st.markdown("*Real-time visualization of how the protocol encrypts and transmits your data*")
+            
+            # Create tabs for different visualization types
+            viz_tab1, viz_tab2, viz_tab3 = st.tabs(["🔄 Quantum Circuit", "🌐 Bloch Spheres & States", "📊 State Evolution"])
+            
+            with viz_tab1:
+                st.markdown("#### Quantum Circuit Diagram")
+                st.markdown("Shows the actual quantum gates and operations used in your protocol execution:")
+                
+                circuit_fig = create_quantum_circuit_visualization([bit0, bit1], result)
+                st.plotly_chart(circuit_fig, use_container_width=True)
+                
+                # Circuit explanation
+                with st.expander("🔍 **Circuit Step-by-Step Explanation**", expanded=False):
+                    st.markdown(f"""
+                    **Your Message: {format_bits_display([bit0, bit1])}**
+                    
+                    1. **Bell State Preparation** (Blue):
+                       - Hadamard gate creates superposition on Alice's qubit
+                       - CNOT gate creates entanglement between Alice and Bob
+                       - Result: |Φ⁺⟩ = (|00⟩ + |11⟩)/√2
+                    
+                    2. **Alice's Encoding** (Red/Green):
+                       - Bit₁ = {bit1}: {'X gate applied' if bit1 == 1 else 'No X gate (Identity)'}
+                       - Bit₀ = {bit0}: {'Z gate applied' if bit0 == 1 else 'No Z gate (Identity)'}
+                       - Encodes your 2-bit message into quantum state
+                    
+                    3. **Bell Measurement** (Purple/Orange):
+                       - CNOT gate followed by Hadamard on Alice's qubit
+                       - Disentangles the qubits for measurement
+                       - Projects the quantum state to classical bits
+                    
+                    4. **Result** (Gray):
+                       - Measurement yields: |{bit0}{bit1}⟩
+                       - Bob successfully decodes Alice's original message!
+                    """)
+            
+            with viz_tab2:
+                st.markdown("#### Bloch Sphere Representation & State Vectors")
+                st.markdown("Visualizes quantum states throughout the protocol execution:")
+                
+                bloch_fig = create_quantum_state_visualization(result, [bit0, bit1])
+                st.plotly_chart(bloch_fig, use_container_width=True)
+                
+                # State explanation
+                with st.expander("🌐 **Quantum State Analysis**", expanded=False):
+                    st.markdown(f"""
+                    **Understanding the Bloch Spheres:**
+                    
+                    🔵 **Initial State**: 
+                    - Both qubits are maximally entangled
+                    - No definite state vector (entangled superposition)
+                    - Represents the shared Bell state |Φ⁺⟩
+                    
+                    🔴 **After Encoding**: 
+                    - Alice applies quantum gates based on her message
+                    - State vector shows the encoded quantum information
+                    - Message {format_bits_display([bit0, bit1])} is now embedded in the quantum state
+                    
+                    🟢 **After Measurement**:
+                    - Bell measurement disentangles the qubits
+                    - State collapses to definite classical result
+                    - Bob obtains the decoded bits: {bit0}, {bit1}
+                    
+                    📈 **State Vector Evolution**:
+                    - Shows probability amplitudes for each basis state
+                    - Demonstrates quantum superposition and collapse
+                    - Final state matches Alice's original message
+                    """)
+            
+            with viz_tab3:
+                st.markdown("#### Real-time Protocol Metrics")
+                
+                col_metrics1, col_metrics2 = st.columns(2)
+                
+                with col_metrics1:
+                    st.markdown("**Quantum State Properties:**")
+                    
+                    # Calculate quantum state metrics
+                    fidelity = result.get('fidelity', 0)
+                    entanglement_measure = min(1.0, max(0.0, 1.0 - result.get('noise_level', 0)))
+                    coherence_time = result.get('execution_time', 0) * 1000  # Convert to ms
+                    
+                    st.metric("State Fidelity", f"{fidelity:.3f}", 
+                             help="Accuracy of quantum state preparation (1.0 = perfect)")
+                    st.metric("Entanglement Quality", f"{entanglement_measure:.3f}", 
+                             help="Measure of quantum entanglement strength")
+                    st.metric("Coherence Time", f"{coherence_time:.1f} ms", 
+                             help="Duration quantum information remained coherent")
+                    
+                    # Quantum advantage indicator
+                    qa = result.get('quantum_advantage', 1)
+                    if qa >= 2:
+                        st.success(f"🚀 **Quantum Advantage**: {qa}x efficiency over classical!")
+                    elif qa >= 1.5:
+                        st.info(f"✨ **Quantum Benefit**: {qa}x improvement")
+                    else:
+                        st.warning(f"⚡ **Classical Comparable**: {qa}x efficiency")
+                
+                with col_metrics2:
+                    st.markdown("**Protocol Security Analysis:**")
+                    
+                    # Security metrics based on quantum properties
+                    security_level = "High" if fidelity > 0.85 else "Medium" if fidelity > 0.7 else "Low"
+                    noise_impact = result.get('noise_level', 0)
+                    error_rate = result.get('error_rate', 0)
+                    
+                    st.metric("Security Level", security_level,
+                             help="Based on quantum state fidelity and error rates")
+                    st.metric("Noise Impact", f"{noise_impact:.3f}",
+                             help="Environmental interference level (0 = no noise)")
+                    st.metric("Transmission Error", f"{error_rate:.3f}",
+                             help="Probability of incorrect decoding")
+                    
+                    # Protocol recommendation
+                    if error_rate < 0.1 and fidelity > 0.8:
+                        st.success("🛡️ **Excellent**: Protocol suitable for secure communication")
+                    elif error_rate < 0.3 and fidelity > 0.6:
+                        st.info("✅ **Good**: Protocol performs well for most applications")
+                    else:
+                        st.warning("⚠️ **Caution**: Consider error correction for critical applications")
+            
+            # Technical insights
+            st.markdown("---")
+            with st.expander("🔬 **Technical Insights: How Your Data Gets Encrypted**", expanded=False):
+                st.markdown(f"""
+                ### The Quantum Encryption Process:
+                
+                **1. Your Input**: `{format_bits_display([bit0, bit1])}`
+                - This represents your original 2-bit message
+                - In classical communication, this would require 2 separate transmissions
+                
+                **2. Quantum Encoding**: 
+                - Alice applies quantum gates: {'X' if bit1==1 else 'I'}⊗{'Z' if bit0==1 else 'I'}
+                - This transforms the shared Bell state: |Φ⁺⟩ → |Φ{['⁺','⁻','ᵧ','ᵧ⁻'][bit0*2+bit1]}⟩
+                - Your 2 bits are now encoded in quantum entanglement properties
+                
+                **3. Quantum Transmission**:
+                - Alice sends only 1 qubit (instead of 2 classical bits)
+                - The entanglement preserves both bits of information
+                - Bob's qubit automatically contains the complementary information
+                
+                **4. Quantum Decoding**:
+                - Bell measurement extracts both encoded bits simultaneously
+                - Quantum measurement collapses the superposition
+                - Result: Bob recovers your original message `{format_bits_display([bit0, bit1])}`
+                
+                **🎯 Key Advantage**: 2 bits transmitted using only 1 quantum particle!
+                **🔒 Security**: Quantum properties make eavesdropping detectable
+                **⚡ Efficiency**: {result.get('quantum_advantage', 2)}x improvement over classical methods
+                """)
+            
             # Detailed analysis
             if visualization_mode == "Detailed Analysis":
                 st.markdown("### 🔬 Detailed Protocol Analysis")

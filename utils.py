@@ -1026,6 +1026,433 @@ def get_balance_summary_metrics(results_history):
         'uniformity_index': 100 - avg_deviation  # Higher is more uniform
     }
 
+def create_quantum_state_visualization(protocol_result, bits_input):
+    """Create comprehensive quantum state visualization showing the protocol steps"""
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+    import numpy as np
+    
+    # Create subplot with Bloch sphere and state vector
+    fig = make_subplots(
+        rows=2, cols=2,
+        subplot_titles=('Initial Bell State |Φ⁺⟩', 'After Alice\'s Encoding', 'After Bob\'s Measurement', 'State Vector Evolution'),
+        specs=[[{'type': 'scatter3d'}, {'type': 'scatter3d'}],
+               [{'type': 'scatter3d'}, {'type': 'xy'}]],
+        vertical_spacing=0.1,
+        horizontal_spacing=0.1
+    )
+    
+    # Quantum state data based on the input bits
+    bit0, bit1 = bits_input
+    
+    # Step 1: Initial Bell state |Φ⁺⟩ = (|00⟩ + |11⟩)/√2
+    # Bloch sphere representation for qubit 1 (Alice's qubit)
+    initial_x, initial_y, initial_z = 0, 0, 0  # Maximally entangled state
+    
+    # Step 2: After Alice's encoding operations
+    # Apply gates based on input bits
+    if bit1 == 1:  # X gate
+        encoded_x = 1 if bit0 == 0 else -1
+        encoded_y = 0
+        encoded_z = 0 if bit0 == 0 else 0
+    else:  # No X gate
+        encoded_x = 0
+        encoded_y = 0
+        encoded_z = 1 if bit0 == 0 else -1
+    
+    # Step 3: After Bob's measurement
+    # Measurement collapses to definite state
+    measured_x = 1 if bit1 == 1 else 0
+    measured_y = 0
+    measured_z = 1 if bit0 == 1 else -1
+    
+    # Add Bloch sphere for initial state
+    add_bloch_sphere(fig, row=1, col=1, x=initial_x, y=initial_y, z=initial_z, 
+                     title="Initial Entangled State", color='blue')
+    
+    # Add Bloch sphere for encoded state
+    add_bloch_sphere(fig, row=1, col=2, x=encoded_x, y=encoded_y, z=encoded_z,
+                     title=f"After Encoding {bit0}{bit1}", color='red')
+    
+    # Add Bloch sphere for measured state
+    add_bloch_sphere(fig, row=2, col=1, x=measured_x, y=measured_y, z=measured_z,
+                     title="After Measurement", color='green')
+    
+    # State vector evolution plot
+    steps = ['Initial |Φ⁺⟩', f'X^{bit1} Z^{bit0}', 'Bell Measurement', f'Result |{bit0}{bit1}⟩']
+    probabilities = [
+        [0.5, 0, 0, 0.5],  # Initial Bell state
+        [0.25, 0.25, 0.25, 0.25] if bit0==1 or bit1==1 else [0.5, 0, 0, 0.5],  # After encoding
+        [1.0, 0, 0, 0] if bit0==0 and bit1==0 else [0, 1.0, 0, 0] if bit0==0 else [0, 0, 1.0, 0] if bit1==0 else [0, 0, 0, 1.0],  # After measurement
+        [1.0, 0, 0, 0] if bit0==0 and bit1==0 else [0, 1.0, 0, 0] if bit0==0 else [0, 0, 1.0, 0] if bit1==0 else [0, 0, 0, 1.0]   # Final result
+    ]
+    
+    # Add state probability evolution
+    for i, state in enumerate(['|00⟩', '|01⟩', '|10⟩', '|11⟩']):
+        fig.add_trace(
+            go.Scatter(
+                x=steps,
+                y=[prob[i] for prob in probabilities],
+                mode='lines+markers',
+                name=state,
+                line=dict(width=3),
+                marker=dict(size=8)
+            ),
+            row=2, col=2
+        )
+    
+    # Update layout
+    fig.update_layout(
+        title=f"🌌 Quantum Superdense Coding Visualization - Message: |{bit0}{bit1}⟩",
+        height=700,
+        showlegend=True,
+        font=dict(size=12)
+    )
+    
+    # Update subplot titles and axes
+    fig.update_xaxes(title_text="Protocol Steps", row=2, col=2)
+    fig.update_yaxes(title_text="State Probability", row=2, col=2)
+    
+    return fig
+
+def add_bloch_sphere(fig, row, col, x, y, z, title, color):
+    """Add a Bloch sphere representation to the subplot"""
+    import numpy as np
+    
+    # Create sphere surface
+    u = np.linspace(0, 2 * np.pi, 50)
+    v = np.linspace(0, np.pi, 50)
+    sphere_x = np.outer(np.cos(u), np.sin(v)) * 0.98
+    sphere_y = np.outer(np.sin(u), np.sin(v)) * 0.98
+    sphere_z = np.outer(np.ones(np.size(u)), np.cos(v)) * 0.98
+    
+    # Add sphere surface
+    fig.add_trace(
+        go.Surface(
+            x=sphere_x, y=sphere_y, z=sphere_z,
+            opacity=0.1,
+            colorscale='Blues',
+            showscale=False,
+            hoverinfo='skip'
+        ),
+        row=row, col=col
+    )
+    
+    # Add coordinate axes
+    axis_length = 1.2
+    
+    # X axis (red)
+    fig.add_trace(
+        go.Scatter3d(
+            x=[-axis_length, axis_length], y=[0, 0], z=[0, 0],
+            mode='lines',
+            line=dict(color='red', width=3),
+            showlegend=False,
+            hoverinfo='skip'
+        ),
+        row=row, col=col
+    )
+    
+    # Y axis (green)
+    fig.add_trace(
+        go.Scatter3d(
+            x=[0, 0], y=[-axis_length, axis_length], z=[0, 0],
+            mode='lines',
+            line=dict(color='green', width=3),
+            showlegend=False,
+            hoverinfo='skip'
+        ),
+        row=row, col=col
+    )
+    
+    # Z axis (blue)
+    fig.add_trace(
+        go.Scatter3d(
+            x=[0, 0], y=[0, 0], z=[-axis_length, axis_length],
+            mode='lines',
+            line=dict(color='blue', width=3),
+            showlegend=False,
+            hoverinfo='skip'
+        ),
+        row=row, col=col
+    )
+    
+    # Add state vector
+    if abs(x) > 0.01 or abs(y) > 0.01 or abs(z) > 0.01:
+        fig.add_trace(
+            go.Scatter3d(
+                x=[0, x], y=[0, y], z=[0, z],
+                mode='lines+markers',
+                line=dict(color=color, width=6),
+                marker=dict(size=[3, 10], color=color),
+                showlegend=False,
+                hoverinfo='text',
+                hovertext=f'State Vector: ({x:.2f}, {y:.2f}, {z:.2f})'
+            ),
+            row=row, col=col
+        )
+    
+    # Add labels
+    fig.add_trace(
+        go.Scatter3d(
+            x=[axis_length*1.1], y=[0], z=[0],
+            mode='text',
+            text=['|+⟩'],
+            textfont=dict(size=14, color='red'),
+            showlegend=False,
+            hoverinfo='skip'
+        ),
+        row=row, col=col
+    )
+    
+    fig.add_trace(
+        go.Scatter3d(
+            x=[0], y=[0], z=[axis_length*1.1],
+            mode='text',
+            text=['|0⟩'],
+            textfont=dict(size=14, color='blue'),
+            showlegend=False,
+            hoverinfo='skip'
+        ),
+        row=row, col=col
+    )
+    
+    fig.add_trace(
+        go.Scatter3d(
+            x=[0], y=[0], z=[-axis_length*1.1],
+            mode='text',
+            text=['|1⟩'],
+            textfont=dict(size=14, color='blue'),
+            showlegend=False,
+            hoverinfo='skip'
+        ),
+        row=row, col=col
+    )
+
+def create_quantum_circuit_visualization(bits_input, protocol_result):
+    """Create quantum circuit diagram showing the protocol steps"""
+    import plotly.graph_objects as go
+    
+    bit0, bit1 = bits_input
+    
+    fig = go.Figure()
+    
+    # Circuit dimensions
+    circuit_width = 10
+    circuit_height = 4
+    qubit_spacing = 1
+    
+    # Draw quantum wires
+    for i in range(2):
+        y_pos = circuit_height - i * qubit_spacing
+        fig.add_trace(
+            go.Scatter(
+                x=[0, circuit_width],
+                y=[y_pos, y_pos],
+                mode='lines',
+                line=dict(color='black', width=2),
+                showlegend=False,
+                hoverinfo='skip'
+            )
+        )
+        
+        # Qubit labels
+        qubit_name = 'Alice' if i == 0 else 'Bob'
+        fig.add_annotation(
+            x=-0.5, y=y_pos,
+            text=f'{qubit_name}',
+            showarrow=False,
+            font=dict(size=14, color='blue')
+        )
+    
+    # Gate positions
+    bell_pos = 1
+    encoding_pos = 3
+    measurement_pos = 6
+    result_pos = 8
+    
+    # Bell state preparation
+    fig.add_shape(
+        type="rect",
+        x0=bell_pos-0.3, y0=circuit_height-0.3,
+        x1=bell_pos+0.3, y1=circuit_height+0.3,
+        fillcolor="lightblue",
+        line=dict(color="blue", width=2)
+    )
+    fig.add_annotation(
+        x=bell_pos, y=circuit_height,
+        text="H",
+        showarrow=False,
+        font=dict(size=16, color='blue')
+    )
+    
+    # CNOT gate
+    fig.add_trace(
+        go.Scatter(
+            x=[bell_pos, bell_pos],
+            y=[circuit_height, circuit_height-1],
+            mode='lines',
+            line=dict(color='blue', width=3),
+            showlegend=False,
+            hoverinfo='skip'
+        )
+    )
+    
+    # Control and target dots for CNOT
+    fig.add_trace(
+        go.Scatter(
+            x=[bell_pos],
+            y=[circuit_height],
+            mode='markers',
+            marker=dict(size=10, color='blue'),
+            showlegend=False,
+            hoverinfo='skip'
+        )
+    )
+    
+    fig.add_trace(
+        go.Scatter(
+            x=[bell_pos],
+            y=[circuit_height-1],
+            mode='markers',
+            marker=dict(size=15, color='white', line=dict(color='blue', width=2)),
+            showlegend=False,
+            hoverinfo='skip'
+        )
+    )
+    
+    # Alice's encoding gates
+    if bit1 == 1:  # X gate
+        fig.add_shape(
+            type="rect",
+            x0=encoding_pos-0.3, y0=circuit_height-0.3,
+            x1=encoding_pos+0.3, y1=circuit_height+0.3,
+            fillcolor="lightcoral",
+            line=dict(color="red", width=2)
+        )
+        fig.add_annotation(
+            x=encoding_pos, y=circuit_height,
+            text="X",
+            showarrow=False,
+            font=dict(size=16, color='red')
+        )
+    
+    if bit0 == 1:  # Z gate
+        fig.add_shape(
+            type="rect",
+            x0=encoding_pos+0.7-0.3, y0=circuit_height-0.3,
+            x1=encoding_pos+0.7+0.3, y1=circuit_height+0.3,
+            fillcolor="lightgreen",
+            line=dict(color="green", width=2)
+        )
+        fig.add_annotation(
+            x=encoding_pos+0.7, y=circuit_height,
+            text="Z",
+            showarrow=False,
+            font=dict(size=16, color='green')
+        )
+    
+    # Bob's Bell measurement
+    # CNOT
+    fig.add_trace(
+        go.Scatter(
+            x=[measurement_pos, measurement_pos],
+            y=[circuit_height, circuit_height-1],
+            mode='lines',
+            line=dict(color='purple', width=3),
+            showlegend=False,
+            hoverinfo='skip'
+        )
+    )
+    
+    fig.add_trace(
+        go.Scatter(
+            x=[measurement_pos],
+            y=[circuit_height],
+            mode='markers',
+            marker=dict(size=10, color='purple'),
+            showlegend=False,
+            hoverinfo='skip'
+        )
+    )
+    
+    fig.add_trace(
+        go.Scatter(
+            x=[measurement_pos],
+            y=[circuit_height-1],
+            mode='markers',
+            marker=dict(size=15, color='white', line=dict(color='purple', width=2)),
+            showlegend=False,
+            hoverinfo='skip'
+        )
+    )
+    
+    # Hadamard on Alice's qubit
+    fig.add_shape(
+        type="rect",
+        x0=measurement_pos+0.7-0.3, y0=circuit_height-0.3,
+        x1=measurement_pos+0.7+0.3, y1=circuit_height+0.3,
+        fillcolor="lightyellow",
+        line=dict(color="orange", width=2)
+    )
+    fig.add_annotation(
+        x=measurement_pos+0.7, y=circuit_height,
+        text="H",
+        showarrow=False,
+        font=dict(size=16, color='orange')
+    )
+    
+    # Measurement symbols
+    for i in range(2):
+        y_pos = circuit_height - i * qubit_spacing
+        fig.add_shape(
+            type="rect",
+            x0=result_pos-0.3, y0=y_pos-0.3,
+            x1=result_pos+0.3, y1=y_pos+0.3,
+            fillcolor="lightgray",
+            line=dict(color="black", width=2)
+        )
+        
+        result_bit = bit0 if i == 0 else bit1
+        fig.add_annotation(
+            x=result_pos, y=y_pos,
+            text=str(result_bit),
+            showarrow=False,
+            font=dict(size=16, color='black')
+        )
+    
+    # Add protocol step labels
+    steps = [
+        (bell_pos, -0.5, "Bell State\nPreparation"),
+        (encoding_pos+0.35, -0.5, "Alice's\nEncoding"),
+        (measurement_pos+0.35, -0.5, "Bell\nMeasurement"),
+        (result_pos, -0.5, f"Result\n|{bit0}{bit1}⟩")
+    ]
+    
+    for x, y, text in steps:
+        fig.add_annotation(
+            x=x, y=y,
+            text=text,
+            showarrow=False,
+            font=dict(size=12, color='navy'),
+            bgcolor="rgba(255,255,255,0.8)",
+            bordercolor="navy",
+            borderwidth=1
+        )
+    
+    # Update layout
+    fig.update_layout(
+        title=f"🔄 Quantum Circuit: Superdense Coding Protocol - Message |{bit0}{bit1}⟩",
+        xaxis=dict(range=[-1, circuit_width+1], showgrid=False, zeroline=False, showticklabels=False),
+        yaxis=dict(range=[-1, circuit_height+0.5], showgrid=False, zeroline=False, showticklabels=False),
+        plot_bgcolor='white',
+        width=800,
+        height=400,
+        margin=dict(l=50, r=50, t=80, b=50)
+    )
+    
+    return fig
+
 def get_scenario_bits(scenario):
     """Map application scenarios to specific bit combinations"""
     scenario_map = {
