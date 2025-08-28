@@ -8,10 +8,10 @@ import time
 from quantum_protocol import SuperdenseCodingProtocol
 from utils import *
 
-# Configure Streamlit with cosmic quantum settings
+# Configure Streamlit with professional quantum settings
 st.set_page_config(
-    page_title="🌌 Quantum Superdense Coding Simulator",
-    page_icon="🚀",
+    page_title="Quantum Superdense Coding Simulator",
+    page_icon="⚛️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -371,7 +371,7 @@ def main():
     st.plotly_chart(fig, use_container_width=True)
     
     # Protocol execution section
-    st.markdown("## 🚀 Protocol Execution Interface")
+    st.markdown("## ⚡ Protocol Execution Interface")
     
     col1, col2 = st.columns([2, 1])
     
@@ -486,7 +486,7 @@ def main():
         st.markdown("### ▶️ Protocol Execution")
         
         execute_button = st.button(
-            "🚀 Execute Superdense Coding Protocol",
+            "⚡ Execute Superdense Coding Protocol",
             type="primary",
             use_container_width=True,
             help="Run the complete quantum protocol with current settings"
@@ -768,7 +768,7 @@ def main():
                     # Quantum advantage indicator
                     qa = result.get('quantum_advantage', 1)
                     if qa >= 2:
-                        st.success(f"🚀 **Quantum Advantage**: {qa}x efficiency over classical!")
+                        st.success(f"⚡ **Quantum Advantage**: {qa}x efficiency over classical!")
                     elif qa >= 1.5:
                         st.info(f"✨ **Quantum Benefit**: {qa}x improvement")
                     else:
@@ -942,7 +942,7 @@ def main():
                         
                         **Phase 3 - Quantum Transmission**:
                         7. 🌀 **Entanglement**: Create Bell state between Alice and Bob
-                        8. 🚀 **Encoding**: Alice encodes encrypted message into quantum state
+                        8. ⚡ **Encoding**: Alice encodes encrypted message into quantum state
                         9. 📡 **Transmission**: Send quantum information through secure channel
                         
                         **Phase 4 - Quantum Decryption**:
