@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Test script for quantum visualization functions"""
-
+# Import visualization utilities for quantum state and circuit
 from utils import create_quantum_state_visualization, create_quantum_circuit_visualization
 
 print("🧪 Testing Quantum Visualization Functions")
@@ -16,6 +16,7 @@ mock_result = {
     'quantum_advantage': 2
 }
 
+# Define test cases for different bit combinations and their descriptions
 test_cases = [
     ([0, 0], "Identity operation"),
     ([0, 1], "X gate only"),
@@ -23,6 +24,7 @@ test_cases = [
     ([1, 1], "X and Z gates")
 ]
 
+# Loop through each test case and verify visualizations
 for bits, description in test_cases:
     print(f"\n📝 Testing: {bits} - {description}")
     

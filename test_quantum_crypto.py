@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Test script for quantum cryptography implementation"""
 
+#Import protocol and cryptography classes for testing 
 from quantum_protocol import SuperdenseCodingProtocol, QuantumRandomGenerator, QuantumCryptographyEngine
 
 print("🧪 Testing Quantum Cryptography Implementation")
@@ -11,15 +12,15 @@ print("\n🎲 Testing Quantum Random Number Generator...")
 qrng = QuantumRandomGenerator()
 
 try:
-    # Generate random bits
+    # Generate random bits and analyze entropy
     random_bits = qrng.generate_quantum_random_bits(16)
     print(f"   ✅ Generated {len(random_bits)} random bits: {random_bits}")
     
-    # Calculate entropy
+    # Analyze entropy of generated bits
     entropy = qrng.quantum_entropy_analysis(random_bits)
     print(f"   📊 Entropy: {entropy:.3f} bits")
     
-    # Generate quantum key
+    # Generate quantum key for cryptography
     quantum_key = qrng.generate_quantum_key(32)
     print(f"   🔑 Generated quantum key: {len(quantum_key)} bytes")
     
@@ -28,6 +29,8 @@ try:
     print(f"   🎯 Generated nonce: {len(nonce)} bytes")
     
 except Exception as e:
+    
+     # Catch and display any errors during QRNG tests
     print(f"   ❌ Error: {e}")
 
 # Test 2: Quantum Cryptography Engine

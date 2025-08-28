@@ -235,16 +235,60 @@ def main():
     # Sidebar configuration - FIXED
     st.sidebar.header("⚙️ Protocol Configuration")
     
-    # FIXED: Noise level slider with proper range and explanation
-    st.sidebar.markdown("### Channel Noise Settings")
+    # FIXED: Enhanced noise level slider with integrated range display
+    st.sidebar.markdown("### 📡 Channel Noise Settings")
+    
+    # Create slider with custom styling to show range
+    st.sidebar.markdown("""
+    <style>
+    .slider-container {
+        position: relative;
+        margin: 10px 0;
+    }
+    .range-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #666;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Add range labels directly above slider
+    st.sidebar.markdown("""
+    <div class="range-labels">
+        <span>🟢 Min: 0.00</span>
+        <span>🔴 Max: 0.50</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Enhanced noise level slider 
     noise_level = st.sidebar.slider(
         "Quantum Channel Noise Level",
         min_value=0.00,
-        max_value=0.50,  # Increased range for better testing
+        max_value=0.50,  
         value=0.05,
         step=0.01,
-        help="Probability of quantum errors during transmission (0 = perfect channel, 0.5 = very noisy)"
+        help="Drag to adjust noise level (0.00 = Perfect, 0.50 = Very Noisy)",
+        format="%.2f",
+        label_visibility="collapsed"
     )
+    
+    # Show current value prominently right below slider
+    st.sidebar.markdown(f"**📊 Current: {noise_level:.2f}**")
+    
+    # Display quality assessment
+    if noise_level <= 0.05:
+        st.sidebar.success("🟢 **Excellent**: Laboratory conditions")
+    elif noise_level <= 0.15:
+        st.sidebar.info("🟡 **Good**: Practical quantum networks")
+    elif noise_level <= 0.30:
+        st.sidebar.warning("🟠 **Challenging**: Early quantum internet")
+    else:
+        st.sidebar.error("🔴 **Severe**: Experimental conditions")
+    
     protocol.noise_level = noise_level
     
     # Display noise level interpretation
@@ -257,7 +301,7 @@ def main():
     else:
         noise_desc = "🔴 Severe (Experimental conditions)"
     
-    st.sidebar.markdown(f"**Channel Quality:** {noise_desc}")
+    st.sidebar.markdown(f"**Current Quality:** {noise_desc}")
     
     # Security monitoring toggle
     enable_security = st.sidebar.checkbox(

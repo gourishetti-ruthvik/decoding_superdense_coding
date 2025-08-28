@@ -15,6 +15,7 @@ def test_forced_mismatch():
     print("=" * 60)
     
     protocol = SuperdenseCodingProtocol()
+    #Test that protocol decodes bits correctly under no noise
     
     # Test case 1: Expect match
     print("\n📝 Test 1: Normal operation (should match)")
@@ -22,6 +23,7 @@ def test_forced_mismatch():
     result = protocol.run_protocol(original_bits[0], original_bits[1])
     decoded_bits = result['decoded_bits']
     match = (original_bits == decoded_bits)
+    #Should return [1, 0] for input bits [1, 0]
     
     print(f"   Original: {original_bits}")
     print(f"   Decoded:  {decoded_bits}")

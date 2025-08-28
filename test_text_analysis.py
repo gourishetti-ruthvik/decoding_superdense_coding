@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Test script for enhanced text analysis"""
-
+#Import the main protocol logic and utility functions
 from utils import text_to_bits
 
 print("🧪 Testing Enhanced Text Analysis")
 print("=" * 50)
 
+# Define a list of sample test texts to analyze
 test_texts = [
     "Hello World",
     "Quantum Computing", 
@@ -15,7 +16,7 @@ test_texts = [
     "a",
     "🚀 Quantum!"
 ]
-
+# Loop through each test string and analyze it
 for text in test_texts:
     print(f"\n📝 Text: \"{text}\"")
     bit0, bit1, analysis = text_to_bits(text)
