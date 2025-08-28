@@ -3,9 +3,9 @@ Quantum Protocol Module - Superdense Coding Implementation with Quantum Cryptogr
 ENHANCED VERSION - With Quantum Random Number Generator and Cryptographic Security
 """
 
-import numpy as np
-import time
-import hashlib
+import numpy as np     # numpy is used for numerical computation 
+import time            #this is used for the time stamping.
+import hashlib                                                                  
 from datetime import datetime
 
 # Qiskit imports with proper fallback
