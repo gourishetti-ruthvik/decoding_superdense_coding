@@ -11,7 +11,7 @@ print("\n🎲 Testing Quantum Random Number Generator...")
 qrng = QuantumRandomGenerator()
 
 try:
-    # Generate random bits
+    # Generate random bits and analyze entropy
     random_bits = qrng.generate_quantum_random_bits(16)
     print(f"   ✅ Generated {len(random_bits)} random bits: {random_bits}")
     

@@ -20,6 +20,8 @@ for bit0, bit1 in test_cases:
     print(f"\n📝 Testing input: bit0={bit0}, bit1={bit1}")
     
     # Run protocol with no noise for clean test
+    # noise_level=0.0 ensures no interference
+    # This allows us to isolate and test the bit ordering functionality
     result = protocol.run_protocol(bit0, bit1, noise_level=0.0)
     
     original = result['original_bits']

@@ -36,38 +36,113 @@ def create_info_box(title, content, icon="ℹ️"):
     """, unsafe_allow_html=True)
 
 def create_security_gauge(security_score, chsh_value=2.5):
-    """Create a security level gauge"""
+    """Create a beautiful and professional security level gauge with modern styling"""
+    
+    # Calculate dynamic security percentage with CHSH value consideration
+    base_score = security_score * 100
+    chsh_bonus = min((chsh_value - 2.0) * 20, 20) if chsh_value > 2.0 else 0
+    final_score = min(base_score + chsh_bonus, 100)
+    
+    # Define professional color scheme with gradients
+    colors = {
+        'critical': '#FF4444',    # Bright red for critical
+        'low': '#FF8C42',         # Orange for low
+        'medium': '#FFD23F',      # Golden yellow for medium  
+        'good': '#4ECDC4',        # Teal for good
+        'high': '#45B7D1',        # Blue for high
+        'excellent': '#96CEB4'    # Mint green for excellent
+    }
+    
+    # Create the gauge with modern styling
     fig = go.Figure(go.Indicator(
         mode = "gauge+number+delta",
-        value = security_score * 100,
+        value = final_score,
         domain = {'x': [0, 1], 'y': [0, 1]},
-        title = {'text': "Security Level"},
-        delta = {'reference': 80},
+        title = {
+            'text': "<b>⚛️ Security Assessment</b>",
+            'font': {'size': 18, 'color': 'white'}
+        },
+        delta = {
+            'reference': 75,
+            'increasing': {'color': colors['excellent']},
+            'decreasing': {'color': colors['critical']}
+        },
+        number = {
+            'font': {'size': 24, 'color': 'white'},
+            'suffix': "%"
+        },
         gauge = {
-            'axis': {'range': [None, 100]},
-            'bar': {'color': "darkblue"},
+            'axis': {
+                'range': [0, 100],
+                'tickwidth': 1,
+                'tickcolor': "white",
+                'tickfont': {'color': 'white', 'size': 12}
+            },
+            'bar': {
+                'color': colors['high'],
+                'thickness': 0.8,
+                'line': {'color': 'white', 'width': 2}
+            },
+            'bgcolor': "rgba(0,0,0,0.3)",
+            'borderwidth': 3,
+            'bordercolor': "white",
             'steps': [
-                {'range': [0, 50], 'color': "lightgray"},
-                {'range': [50, 80], 'color': "yellow"},
-                {'range': [80, 100], 'color': "green"}],
+                {'range': [0, 20], 'color': colors['critical'], 'name': 'Critical'},
+                {'range': [20, 40], 'color': colors['low'], 'name': 'Low'},
+                {'range': [40, 60], 'color': colors['medium'], 'name': 'Medium'},
+                {'range': [60, 80], 'color': colors['good'], 'name': 'Good'},
+                {'range': [80, 90], 'color': colors['high'], 'name': 'High'},
+                {'range': [90, 100], 'color': colors['excellent'], 'name': 'Excellent'}
+            ],
             'threshold': {
-                'line': {'color': "red", 'width': 4},
-                'thickness': 0.75,
-                'value': 90}}))
+                'line': {'color': "white", 'width': 4},
+                'thickness': 0.8,
+                'value': 85
+            }
+        }
+    ))
     
+    # Professional layout with cosmic theme
     fig.update_layout(
         template='plotly_dark',
-        height=250,
-        font=dict(size=12)
+        height=300,
+        width=400,
+        font={'color': 'white', 'family': 'Arial, sans-serif'},
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=40, r=40, t=60, b=40),
+        annotations=[
+            dict(
+                x=0.5, y=0.1,
+                text=f"<b>CHSH Value: {chsh_value:.2f}</b>",
+                showarrow=False,
+                font=dict(size=12, color='white'),
+                bgcolor="rgba(69, 183, 209, 0.8)",
+                bordercolor="white",
+                borderwidth=1
+            )
+        ]
     )
     
-    # Determine security level based on both metrics
-    if security_score > 0.8 and chsh_value > 2.0:
-        level = "High"
-    elif security_score > 0.5:
-        level = "Medium"
+    # Determine security level with more granular assessment
+    if final_score >= 90 and chsh_value > 2.3:
+        level = "🟢 Excellent"
+        level_color = colors['excellent']
+    elif final_score >= 80 and chsh_value > 2.1:
+        level = "🔵 High"
+        level_color = colors['high']
+    elif final_score >= 60:
+        level = "🟡 Good"
+        level_color = colors['good']
+    elif final_score >= 40:
+        level = "🟠 Medium"
+        level_color = colors['medium']
+    elif final_score >= 20:
+        level = "🟠 Low"
+        level_color = colors['low']
     else:
-        level = "Low"
+        level = "🔴 Critical"
+        level_color = colors['critical']
     
     return fig, level
 
