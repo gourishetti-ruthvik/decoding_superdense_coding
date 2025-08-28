@@ -1,126 +1,165 @@
 """
 Professional Superdense Coding Simulator
 FIXED VERSION - All Issues Resolved
+
+This Streamlit application provides a comprehensive interactive simulation
+of the quantum superdense coding protocol. It demonstrates how quantum
+entanglement can be used to transmit 2 classical bits using only 1 qubit.
+
+KEY FEATURES:
+- Interactive quantum superdense coding simulation
+- Real-time quantum circuit visualization
+- Quantum cryptography integration
+- Professional scientific visualization
+- Educational protocol explanations
+- Mathematical analysis and validation
+- Noise modeling and error analysis
+
+TECHNICAL COMPONENTS:
+- Streamlit web interface for user interaction
+- Qiskit quantum computing backend (with classical fallback)
+- Plotly for advanced scientific visualizations
+- Quantum protocol implementation with cryptographic security
+- Comprehensive testing and validation framework
+
+EDUCATIONAL VALUE:
+- Demonstrates quantum information theory concepts
+- Shows practical quantum communication protocols
+- Illustrates quantum advantage over classical methods
+- Provides hands-on quantum computing experience
 """
 
-import streamlit as st
-import time
-from quantum_protocol import SuperdenseCodingProtocol
-from utils import *
+# Import required libraries for the application
+import streamlit as st      # Web application framework
+import time                 # Time operations and delays
+from quantum_protocol import SuperdenseCodingProtocol  # Core quantum protocol
+from utils import *         # Utility functions for visualization and analysis
 
-# Configure Streamlit with professional quantum settings
+# Configure Streamlit with professional quantum computing settings
 st.set_page_config(
-    page_title="Quantum Superdense Coding Simulator",
-    page_icon="⚛️",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="Quantum Superdense Coding Simulator",  # Browser tab title
+    page_icon="⚛️",                                     # Browser tab icon
+    layout="wide",                                      # Use full page width
+    initial_sidebar_state="expanded"                    # Show sidebar by default
 )
 
-# Custom CSS for quantum cosmic styling
+# Custom CSS for quantum cosmic styling and professional appearance
+# This creates a visually appealing interface that matches the quantum theme
 st.markdown("""
 <style>
-    /* Quantum Cosmic Theme */
+    /* Main header styling with animated quantum gradient background */
     .main-header {
         background: linear-gradient(135deg, #0f0f23 0%, #1a0826 25%, #2d1b69 50%, #4a148c 75%, #6a1b9a 100%);
-        background-size: 400% 400%;
-        animation: quantumGlow 8s ease-in-out infinite;
+        background-size: 400% 400%;               /* Large background for animation */
+        animation: quantumGlow 8s ease-in-out infinite; /* Smooth color transitions */
         padding: 2rem;
         border-radius: 15px;
         color: white;
         text-align: center;
         margin-bottom: 2rem;
-        box-shadow: 0 0 50px rgba(106, 27, 154, 0.3);
-        border: 2px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 50px rgba(106, 27, 154, 0.3); /* Glowing effect */
+        border: 2px solid rgba(255, 255, 255, 0.1);    /* Subtle border */
     }
     
+    /* Animated rainbow text effect for cosmic titles */
     .cosmic-title {
         background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #06ffa5, #ffbe0b, #ff006e);
-        background-size: 600% 600%;
-        animation: cosmicRainbow 3s ease-in-out infinite;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        background-size: 600% 600%;               /* Extra large for smooth animation */
+        animation: cosmicRainbow 3s ease-in-out infinite; /* Color cycling */
+        -webkit-background-clip: text;            /* Clip background to text */
+        -webkit-text-fill-color: transparent;     /* Make text transparent */
+        background-clip: text;                    /* Cross-browser support */
         font-weight: bold;
-        text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        text-shadow: 0 0 30px rgba(255, 255, 255, 0.5); /* Subtle glow */
     }
     
+    /* Animation keyframes for rainbow color cycling */
     @keyframes cosmicRainbow {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+        0% { background-position: 0% 50%; }     /* Start position */
+        50% { background-position: 100% 50%; }  /* Middle position */
+        100% { background-position: 0% 50%; }   /* Return to start */
     }
     
+    /* Animation keyframes for quantum glow effect */
     @keyframes quantumGlow {
-        0%, 100% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
+        0%, 100% { background-position: 0% 50%; }  /* Start/end position */
+        50% { background-position: 100% 50%; }     /* Middle transition */
     }
     
+    /* Main app background with quantum-themed gradient */
     .stApp {
         background: linear-gradient(135deg, #0c0c1e 0%, #1a1a3e 25%, #2d1b69 50%, #1a1a3e 75%, #0c0c1e 100%);
-        background-attachment: fixed;
+        background-attachment: fixed;             /* Fixed background during scroll */
     }
     
+    /* Metric cards with glowing borders and animations */
     .metric-card {
-        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        background: linear-gradient(135deg, #1e3c72, #2a5298); /* Blue gradient */
         padding: 1.5rem;
         border-radius: 15px;
-        border: 2px solid #4fc3f7;
+        border: 2px solid #4fc3f7;              /* Light blue border */
         text-align: center;
         color: white;
-        box-shadow: 0 0 30px rgba(79, 195, 247, 0.3);
-        animation: pulse 3s ease-in-out infinite;
+        box-shadow: 0 0 30px rgba(79, 195, 247, 0.3); /* Blue glow */
+        animation: pulse 3s ease-in-out infinite; /* Gentle pulsing */
     }
     
+    /* Subtle pulsing animation for metric cards */
     @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.02); }
+        0%, 100% { transform: scale(1); }        /* Normal size */
+        50% { transform: scale(1.02); }          /* Slightly larger */
     }
     
+    /* Quantum-themed column styling with glass effect */
     .quantum-column {
-        background: rgba(29, 35, 82, 0.7);
-        border: 2px solid #00ff88;
+        background: rgba(29, 35, 82, 0.7);       /* Semi-transparent background */
+        border: 2px solid #00ff88;               /* Green quantum border */
         border-radius: 15px;
         padding: 20px;
         margin: 10px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 0 40px rgba(0, 255, 136, 0.2);
+        backdrop-filter: blur(10px);             /* Glass blur effect */
+        box-shadow: 0 0 40px rgba(0, 255, 136, 0.2); /* Green glow */
     }
     
+    /* Cosmic glow text effect for special elements */
     .cosmic-glow {
         background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #06ffa5);
         background-size: 400% 400%;
-        animation: cosmicShift 4s ease-in-out infinite;
+        animation: cosmicShift 4s ease-in-out infinite; /* Color shifting */
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         font-weight: bold;
     }
     
+    /* Color shifting animation for cosmic elements */
     @keyframes cosmicShift {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
     }
     
+    /* Success message styling with green quantum theme */
     .success-box {
-        background: linear-gradient(135deg, #00ff88, #00c9a7);
+        background: linear-gradient(135deg, #00ff88, #00c9a7); /* Green gradient */
         border: 2px solid #00ff88;
-        color: #0c0c1e;
+        color: #0c0c1e;                          /* Dark text on light background */
         padding: 1.5rem;
         border-radius: 15px;
         margin: 1rem 0;
-        box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+        box-shadow: 0 0 30px rgba(0, 255, 136, 0.4); /* Strong green glow */
         font-weight: bold;
     }
     
+    /* Professional button styling with quantum theme */
     .quantum-button {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(135deg, #667eea, #764ba2); /* Purple gradient */
         border: none;
         color: white;
         padding: 12px 24px;
-        border-radius: 25px;
+        border-radius: 25px;                     /* Rounded corners */
         font-weight: bold;
-        transition: all 0.3s ease;
+        transition: all 0.3s ease;               /* Smooth hover transitions */
         box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
     }
     
@@ -204,41 +243,61 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def main():
-    """Main application with cosmic quantum UI and enhanced functionality"""
+    """
+    Main application function with cosmic quantum UI and enhanced functionality
     
-    # Cosmic Quantum Header
+    This function orchestrates the entire Streamlit application, providing:
+    - Professional quantum-themed user interface
+    - Interactive protocol configuration
+    - Real-time quantum simulation execution
+    - Comprehensive results visualization and analysis
+    - Educational content and mathematical details
+    
+    The application is structured as a single-page web app with sidebar controls
+    and main content area for results display and analysis.
+    """
+    
+    # Cosmic Quantum Header - Creates visually striking title section
+    # This header establishes the quantum theme and provides visual appeal
     st.markdown("""
     <div class="main-header">
         <div style="margin-bottom: 1rem;">
+            <!-- Animated quantum symbols with glowing effects -->
             <span style="font-size: 4em; filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));">⚛️</span>
             <span style="font-size: 3.5em; margin: 0 20px; filter: drop-shadow(0 0 20px rgba(79, 195, 247, 0.8));">🌌</span>
             <span style="font-size: 4em; filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));">⚛️</span>
         </div>
+        <!-- Main title with quantum styling -->
         <h1 style="margin: 0; font-size: 3.2em; color: white; text-shadow: 0 0 20px rgba(79, 195, 247, 0.8);">
             QUANTUM SUPERDENSE CODING
         </h1>
+        <!-- Subtitle describing the application purpose -->
         <p style="margin: 0.5rem 0 0 0; font-size: 1.2em; color: #00ff88; text-shadow: 0 0 10px rgba(0, 255, 136, 0.6);">
             🔬 Advanced Quantum Communication Protocol 🔬
         </p>
+        <!-- Inspirational tagline -->
         <p style="margin: 0.3rem 0 0 0; font-size: 1em; color: #ffffff; text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);">
             Experience the infinite power of quantum information.
         </p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Initialize protocol with session state
+    # Initialize protocol with session state management
+    # This ensures the protocol instance persists across Streamlit reruns
     if 'protocol' not in st.session_state:
         st.session_state.protocol = SuperdenseCodingProtocol()
     
-    protocol = st.session_state.protocol
+    protocol = st.session_state.protocol  # Get persistent protocol instance
     
-    # Sidebar configuration - FIXED
+    # Sidebar configuration - FIXED with professional styling
     st.sidebar.header("⚙️ Protocol Configuration")
     
     # FIXED: Enhanced noise level slider with integrated range display
+    # Quantum channel noise is a critical parameter for realistic simulation
     st.sidebar.markdown("### 📡 Channel Noise Settings")
     
-    # Create slider with custom styling to show range
+    # Create slider with custom styling to show range information
+    # This helps users understand the impact of different noise levels
     st.sidebar.markdown("""
     <style>
     .slider-container {
@@ -256,7 +315,7 @@ def main():
     </style>
     """, unsafe_allow_html=True)
     
-    # Add range labels directly above slider
+    # Add range labels directly above slider for better UX
     st.sidebar.markdown("""
     <div class="range-labels">
         <span>🟢 Min: 0.00</span>

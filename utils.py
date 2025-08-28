@@ -1,34 +1,86 @@
 """
 Professional Utility Functions - Fixed and Enhanced
 CLEAN VERSION - No Hackathon Branding
+
+This module contains utility functions for the quantum superdense coding simulator,
+providing visualization, analysis, and display capabilities for the Streamlit application.
+
+KEY FUNCTIONALITY:
+- Interactive Plotly visualizations for quantum data
+- Professional UI components and styling
+- Quantum measurement analysis and statistics
+- Security metrics and cryptographic displays
+- Mathematical analysis and validation tools
+- Real-time performance monitoring
+- Educational content formatting
+
+TECHNICAL COMPONENTS:
+- Plotly graphs for scientific visualization
+- Streamlit components for web interface
+- Pandas for data manipulation and analysis
+- Mathematical functions for quantum calculations
+- CSS styling for professional appearance
+
+The functions in this module support the main application by providing
+sophisticated visualization and analysis capabilities while maintaining
+a professional scientific appearance.
 """
 
-import plotly.graph_objects as go
-import plotly.express as px
-import pandas as pd
-import streamlit as st
+# Import required libraries for visualization and data handling
+import plotly.graph_objects as go    # Interactive plotting library
+import plotly.express as px          # High-level plotting interface  
+import pandas as pd                  # Data manipulation and analysis
+import streamlit as st               # Web application framework
 
 def format_bits_display(bits):
-    """Format bits for nice display"""
+    """
+    Format bits for nice display in the user interface
+    
+    This function takes various bit formats and converts them to a
+    standardized string representation for consistent display.
+    
+    Args:
+        bits: Bits in various formats (list, tuple, string, etc.)
+        
+    Returns:
+        str: Formatted bit string for display
+    """
+    # Handle list/tuple of two bits (most common case)
     if isinstance(bits, (list, tuple)) and len(bits) == 2:
-        return f"{bits[0]}{bits[1]}"
-    return str(bits)
+        return f"{bits[0]}{bits[1]}"  # Concatenate two bits
+    return str(bits)  # Convert other formats to string
 
 def create_info_box(title, content, icon="ℹ️"):
-    """Create a cosmic quantum info box"""
+    """
+    Create a cosmic quantum-themed information box
+    
+    This function generates visually appealing information boxes with
+    quantum-themed styling for displaying important information,
+    explanations, and educational content.
+    
+    Args:
+        title (str): Box title/header text
+        content (str): Main content/body text  
+        icon (str): Emoji icon for the box (default info icon)
+        
+    Returns:
+        None: Displays the box directly in Streamlit
+    """
     st.markdown(f"""
     <div style="
-        background: linear-gradient(135deg, #1e3c72, #2a5298);
-        padding: 20px;
-        border-radius: 15px;
-        border: 2px solid #4fc3f7;
-        margin: 10px 0;
-        box-shadow: 0 0 30px rgba(79, 195, 247, 0.3);
-        animation: pulse 3s ease-in-out infinite;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);  /* Blue gradient background */
+        padding: 20px;                                         /* Internal spacing */
+        border-radius: 15px;                                   /* Rounded corners */
+        border: 2px solid #4fc3f7;                            /* Blue border */
+        margin: 10px 0;                                        /* Vertical spacing */
+        box-shadow: 0 0 30px rgba(79, 195, 247, 0.3);         /* Glowing shadow */
+        animation: pulse 3s ease-in-out infinite;              /* Subtle animation */
     ">
+        <!-- Title with quantum green color and glow effect -->
         <h3 style="color: #00ff88; margin: 0 0 10px 0; text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);">
             {icon} {title}
         </h3>
+        <!-- Content with white text and subtle shadow -->
         <p style="color: white; margin: 0; line-height: 1.6; text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);">
             {content}
         </p>
@@ -36,56 +88,80 @@ def create_info_box(title, content, icon="ℹ️"):
     """, unsafe_allow_html=True)
 
 def create_security_gauge(security_score, chsh_value=2.5):
-    """Create a beautiful and professional security level gauge with modern styling"""
+    """
+    Create a beautiful and professional security level gauge with modern styling
+    
+    This function generates an interactive gauge chart to visualize the security
+    level of the quantum protocol. It incorporates both base security scores
+    and CHSH (Clauser-Horne-Shimony-Holt) inequality values for comprehensive
+    security assessment.
+    
+    SECURITY LEVELS:
+    - 0-20%: Critical (red) - Major security vulnerabilities
+    - 20-40%: Low (orange) - Significant security concerns  
+    - 40-60%: Medium (yellow) - Moderate security level
+    - 60-80%: Good (teal) - Strong security foundation
+    - 80-90%: High (blue) - Very secure implementation
+    - 90-100%: Excellent (green) - Maximum security achieved
+    
+    Args:
+        security_score (float): Base security score (0.0 to 1.0)
+        chsh_value (float): CHSH inequality value for quantum entanglement verification
+        
+    Returns:
+        plotly.graph_objects.Figure: Interactive security gauge chart
+    """
     
     # Calculate dynamic security percentage with CHSH value consideration
-    base_score = security_score * 100
-    chsh_bonus = min((chsh_value - 2.0) * 20, 20) if chsh_value > 2.0 else 0
-    final_score = min(base_score + chsh_bonus, 100)
+    # CHSH values > 2.0 indicate quantum entanglement, enhancing security
+    base_score = security_score * 100                           # Convert to percentage
+    chsh_bonus = min((chsh_value - 2.0) * 20, 20) if chsh_value > 2.0 else 0  # Bonus for entanglement
+    final_score = min(base_score + chsh_bonus, 100)             # Cap at 100%
     
-    # Define professional color scheme with gradients
+    # Define professional color scheme with gradients for different security levels
     colors = {
-        'critical': '#FF4444',    # Bright red for critical
-        'low': '#FF8C42',         # Orange for low
-        'medium': '#FFD23F',      # Golden yellow for medium  
-        'good': '#4ECDC4',        # Teal for good
-        'high': '#45B7D1',        # Blue for high
-        'excellent': '#96CEB4'    # Mint green for excellent
+        'critical': '#FF4444',    # Bright red for critical security issues
+        'low': '#FF8C42',         # Orange for low security levels
+        'medium': '#FFD23F',      # Golden yellow for medium security  
+        'good': '#4ECDC4',        # Teal for good security levels
+        'high': '#45B7D1',        # Blue for high security
+        'excellent': '#96CEB4'    # Mint green for excellent security
     }
     
-    # Create the gauge with modern styling
+    # Create the interactive gauge with modern styling and clear visual hierarchy
     fig = go.Figure(go.Indicator(
-        mode = "gauge+number+delta",
-        value = final_score,
-        domain = {'x': [0, 1], 'y': [0, 1]},
+        mode = "gauge+number+delta",  # Show gauge, number, and delta indicator
+        value = final_score,          # Current security percentage
+        domain = {'x': [0, 1], 'y': [0, 1]},  # Full chart area
         title = {
-            'text': "<b>⚛️ Security Assessment</b>",
-            'font': {'size': 18, 'color': 'white'}
+            'text': "<b>⚛️ Security Assessment</b>",  # Chart title with quantum symbol
+            'font': {'size': 18, 'color': 'white'}    # White text for dark theme
         },
         delta = {
-            'reference': 75,
-            'increasing': {'color': colors['excellent']},
-            'decreasing': {'color': colors['critical']}
+            'reference': 75,                          # Reference line at 75%
+            'increasing': {'color': colors['excellent']},  # Green for improving security
+            'decreasing': {'color': colors['critical']}   # Red for declining security
         },
         number = {
-            'font': {'size': 24, 'color': 'white'},
-            'suffix': "%"
+            'font': {'size': 24, 'color': 'white'},  # Large white percentage display
+            'suffix': "%"                            # Add percentage symbol
         },
         gauge = {
             'axis': {
-                'range': [0, 100],
-                'tickwidth': 1,
-                'tickcolor': "white",
-                'tickfont': {'color': 'white', 'size': 12}
+                'range': [0, 100],                   # 0-100% scale
+                'tickwidth': 1,                      # Thin tick marks
+                'tickcolor': "white",                # White tick marks
+                'tickfont': {'color': 'white', 'size': 12}  # White tick labels
             },
             'bar': {
-                'color': colors['high'],
-                'thickness': 0.8,
-                'line': {'color': 'white', 'width': 2}
+                'color': colors['high'],             # Blue gauge bar
+                'thickness': 0.8,                   # Thick gauge bar
+                'line': {'color': 'white', 'width': 2}  # White outline
             },
-            'bgcolor': "rgba(0,0,0,0.3)",
-            'borderwidth': 3,
-            'bordercolor': "white",
+            'bgcolor': "rgba(0,0,0,0.3)",           # Semi-transparent background
+            'borderwidth': 3,                       # Thick border
+            'bordercolor': "white",                 # White border
+            # Color-coded steps showing different security levels
             'steps': [
                 {'range': [0, 20], 'color': colors['critical'], 'name': 'Critical'},
                 {'range': [20, 40], 'color': colors['low'], 'name': 'Low'},
@@ -94,10 +170,11 @@ def create_security_gauge(security_score, chsh_value=2.5):
                 {'range': [80, 90], 'color': colors['high'], 'name': 'High'},
                 {'range': [90, 100], 'color': colors['excellent'], 'name': 'Excellent'}
             ],
+            # Threshold indicator at 85% (target security level)
             'threshold': {
-                'line': {'color': "white", 'width': 4},
-                'thickness': 0.8,
-                'value': 85
+                'line': {'color': "white", 'width': 4},  # White threshold line
+                'thickness': 0.8,                        # Thick threshold marker
+                'value': 85                              # 85% security target
             }
         }
     ))
@@ -2212,65 +2289,122 @@ def create_quantum_random_visualization(qrng_data):
     return fig
 
 def display_quantum_crypto_metrics(result):
-    """Display quantum cryptography metrics in Streamlit"""
+    """
+    Display quantum cryptography metrics in Streamlit interface
+    
+    This function creates a comprehensive dashboard showing the status and
+    performance of quantum cryptographic operations. It provides visual
+    feedback on encryption, decryption, authentication, and security metrics.
+    
+    DISPLAYED METRICS:
+    - Quantum encryption success/failure status
+    - Quantum decryption verification results
+    - Authentication verification status  
+    - Overall security level assessment
+    - Quantum key entropy analysis
+    - Randomness quality evaluation
+    
+    Args:
+        result (dict): Protocol execution results containing crypto data
+        
+    Returns:
+        None: Displays metrics directly in Streamlit interface
+    """
     import streamlit as st
     
+    # Only display if quantum cryptography was enabled for this execution
     if not result.get('quantum_crypto_enabled', False):
         return
     
+    # Main cryptography status header
     st.markdown("### 🔐 Quantum Cryptography Status")
     
+    # Create four-column layout for key metrics display
     col1, col2, col3, col4 = st.columns(4)
     
+    # Column 1: Encryption Status
     with col1:
+        # Check if quantum encryption was successful
         encryption_status = "✅ Success" if result.get('quantum_encryption_success') else "❌ Failed"
         st.metric("Quantum Encryption", encryption_status)
     
+    # Column 2: Decryption Status  
     with col2:
+        # Verify quantum decryption integrity
         decryption_status = "✅ Success" if result.get('quantum_decryption_success') else "❌ Failed"
         st.metric("Quantum Decryption", decryption_status)
     
+    # Column 3: Authentication Status
     with col3:
+        # Check quantum authentication verification
         auth_status = "✅ Verified" if result.get('quantum_auth_verified') else "❌ Failed"
         st.metric("Authentication", auth_status)
     
+    # Column 4: Overall Security Level
     with col4:
+        # Display computed security assessment
         security_level = result.get('quantum_security_level', 'UNKNOWN')
         st.metric("Security Level", security_level)
     
-    # Key entropy display
+    # Quantum key entropy analysis section
+    # Entropy measures the randomness quality of generated quantum keys
     if 'quantum_key_entropy' in result:
         entropy = result['quantum_key_entropy']
         st.markdown(f"**Quantum Key Entropy:** {entropy:.3f} bits")
         
+        # Provide entropy-based security assessment with color-coded feedback
         if entropy > 7.5:
+            # Near-maximum entropy indicates excellent quantum randomness
             st.success("🔥 **Excellent quantum randomness** - Maximum security achieved!")
         elif entropy > 7.0:
+            # High entropy provides strong security foundation
             st.info("✅ **Good quantum randomness** - High security level")
         elif entropy > 6.0:
+            # Moderate entropy may indicate potential issues
             st.warning("⚠️ **Moderate quantum randomness** - Consider regenerating keys")
         else:
+            # Low entropy suggests compromised security
             st.error("❌ **Poor quantum randomness** - Security compromised!")
 
 def create_quantum_encryption_flow_diagram():
-    """Create diagram showing quantum encryption flow"""
+    """
+    Create diagram showing quantum encryption flow process
+    
+    This function generates an interactive flowchart visualization that
+    illustrates the complete quantum encryption and superdense coding
+    process from input message to final output.
+    
+    PROCESS FLOW:
+    1. Input Message (classical bits)
+    2. Quantum Key Generation (QRNG)
+    3. Quantum Encryption (secure encoding)
+    4. Superdense Coding (entanglement protocol)
+    5. Quantum Channel (transmission)
+    6. Bell Measurement (quantum decoding)
+    7. Quantum Decryption (secure decoding)
+    8. Output Message (recovered bits)
+    
+    Returns:
+        plotly.graph_objects.Figure: Interactive flow diagram
+    """
     import plotly.graph_objects as go
     
     fig = go.Figure()
     
-    # Define flow steps
+    # Define flow steps with positions and labels
+    # Each tuple contains (x_position, y_position, step_label)
     steps = [
-        (1, 4, "Input\nMessage"),
-        (3, 4, "Quantum\nKey Gen"),
-        (5, 4, "Quantum\nEncryption"),
-        (7, 4, "Superdense\nCoding"),
-        (9, 4, "Quantum\nChannel"),
-        (11, 4, "Bell\nMeasurement"),
-        (13, 4, "Quantum\nDecryption"),
-        (15, 4, "Output\nMessage")
+        (1, 4, "Input\nMessage"),           # Starting point: classical message
+        (3, 4, "Quantum\nKey Gen"),        # Generate quantum random keys
+        (5, 4, "Quantum\nEncryption"),     # Encrypt with quantum keys
+        (7, 4, "Superdense\nCoding"),      # Apply superdense coding protocol
+        (9, 4, "Quantum\nChannel"),        # Transmit through quantum channel
+        (11, 4, "Bell\nMeasurement"),      # Perform Bell state measurement
+        (13, 4, "Quantum\nDecryption"),    # Decrypt using quantum keys
+        (15, 4, "Output\nMessage")         # Final recovered message
     ]
     
-    # Add step boxes
+    # Add step boxes with professional styling
     for x, y, text in steps:
         fig.add_shape(
             type="rect",

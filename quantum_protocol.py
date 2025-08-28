@@ -1,41 +1,87 @@
 """
 Quantum Protocol Module - Superdense Coding Implementation with Quantum Cryptography
 ENHANCED VERSION - With Quantum Random Number Generator and Cryptographic Security
+
+This module implements the core quantum superdense coding protocol, which allows
+two classical bits to be transmitted using only one quantum bit (qubit) by
+leveraging quantum entanglement and Bell states.
+
+Key Features:
+- Complete superdense coding protocol implementation
+- Quantum cryptography integration for enhanced security
+- True quantum random number generation
+- Bell state manipulation and measurement
+- Classical fallback for systems without quantum hardware
+- Comprehensive error handling and validation
 """
 
-import numpy as np          
-import time             
-import hashlib
-from datetime import datetime
+# Import required libraries for quantum computing and classical operations
+import numpy as np          # Numerical computations and array operations
+import time                 # Time-based operations and delays  
+import hashlib              # Cryptographic hashing functions
+from datetime import datetime  # Date and time handling
 
-# Qiskit imports with proper fallback
+# Qiskit imports with proper fallback handling
+# This allows the code to work even if Qiskit is not installed
 try:
-    from qiskit import QuantumCircuit
-    from qiskit_aer import Aer
-    from qiskit import transpile
+    from qiskit import QuantumCircuit  # Quantum circuit construction
+    from qiskit_aer import Aer         # Quantum simulator backend
+    from qiskit import transpile       # Circuit optimization and compilation
     QISKIT_AVAILABLE = True
 except ImportError:
+    # Try older Qiskit API as fallback
     try:
         from qiskit import QuantumCircuit, Aer, execute
         QISKIT_AVAILABLE = True
     except ImportError:
+        # No Qiskit available - use classical simulation only
         QISKIT_AVAILABLE = False
 
 class QuantumRandomGenerator:
     """
     Quantum Random Number Generator using quantum superposition and measurement
-    Provides true quantum randomness for cryptographic applications
+    
+    This class provides true quantum randomness for cryptographic applications
+    by leveraging quantum superposition states and the inherent randomness
+    of quantum measurements. Falls back to cryptographically secure
+    pseudorandom generation when quantum hardware is unavailable.
+    
+    Attributes:
+        backend: Quantum simulator backend for quantum operations
+        entropy_pool: Storage for generated random values
+        seed_counter: Counter for tracking entropy generation
     """
     
     def __init__(self, backend=None):
+        """
+        Initialize the quantum random number generator
+        
+        Args:
+            backend: Optional quantum backend. Defaults to qasm_simulator
+        """
+        # Set up quantum backend with fallback to default simulator
         self.backend = backend or Aer.get_backend('qasm_simulator')
-        self.entropy_pool = []
-        self.seed_counter = 0
+        self.entropy_pool = []      # Store generated random bits
+        self.seed_counter = 0       # Track number of generations
         
     def generate_quantum_random_bits(self, num_bits, shots=1024):
-        """Generate truly random bits using quantum superposition"""
+        """
+        Generate truly random bits using quantum superposition
+        
+        This method creates a quantum circuit with Hadamard gates to put
+        qubits in superposition, then measures them to get random bits.
+        Each measurement has a 50% probability of being 0 or 1.
+        
+        Args:
+            num_bits (int): Number of random bits to generate
+            shots (int): Number of quantum measurements to perform
+            
+        Returns:
+            list: List of random bits (0s and 1s)
+        """
+        # Fallback to classical randomness for large requests or no Qiskit
         if not QISKIT_AVAILABLE or num_bits > 20:  # Limit to prevent coupling map issues
-            # Fallback to cryptographically secure pseudorandom
+            # Use cryptographically secure pseudorandom generation
             import secrets
             return [secrets.randbelow(2) for _ in range(num_bits)]
         
@@ -45,22 +91,26 @@ class QuantumRandomGenerator:
             qc = QuantumCircuit(num_bits, num_bits)
             
             # Apply Hadamard gates to create superposition
+            # Each qubit becomes |0⟩ + |1⟩ with equal probability
             for i in range(num_bits):
-                qc.h(i)
+                qc.h(i)  # Hadamard gate creates superposition
             
-            # Add quantum measurement
+            # Add quantum measurement to collapse superposition
+            # This converts quantum superposition to classical random bits
             qc.measure_all()
             
-            # Execute circuit
-            transpiled_qc = transpile(qc, self.backend)
-            job = self.backend.run(transpiled_qc, shots=shots)
-            result = job.result()
-            counts = result.get_counts()
+            # Execute circuit on quantum simulator
+            transpiled_qc = transpile(qc, self.backend)  # Optimize for backend
+            job = self.backend.run(transpiled_qc, shots=shots)  # Run simulation
+            result = job.result()  # Get execution results
+            counts = result.get_counts()  # Get measurement statistics
             
             # Extract random bits from measurement results
+            # The quantum measurement naturally provides true randomness
             random_bits = []
             total_measurements = sum(counts.values())
             
+            # Process measurement outcomes to extract random bits
             for bit_string, count in counts.items():
                 probability = count / total_measurements
                 # Use quantum measurement statistics for true randomness
@@ -71,26 +121,41 @@ class QuantumRandomGenerator:
                             if len(random_bits) < num_bits:
                                 random_bits.append(int(bit))
             
-            # Return requested number of bits
+            # Return exactly the requested number of random bits
             return random_bits[:num_bits]
             
         except Exception as e:
-            # Fallback on quantum error
+            # Fallback to classical randomness if quantum generation fails
+            # This ensures the system remains functional even with quantum errors
             import secrets
             return [secrets.randbelow(2) for _ in range(num_bits)]
     
     def generate_quantum_key(self, key_length=256):
-        """Generate quantum cryptographic key using multiple small quantum generations"""
+        """
+        Generate quantum cryptographic key using multiple small quantum generations
+        
+        For large keys, this method uses a hybrid approach to overcome
+        quantum hardware limitations while still incorporating quantum randomness.
+        
+        Args:
+            key_length (int): Length of key in bits (default 256)
+            
+        Returns:
+            bytes: Cryptographic key derived from quantum randomness
+        """
         if key_length > 160:  # For larger keys, use hybrid approach
             # Generate smaller quantum chunks and combine
+            # This avoids qubit limitations while maintaining quantum security
             quantum_chunks = []
-            chunk_size = 16  # Small quantum generations
+            chunk_size = 16  # Small quantum generations to stay within limits
             
+            # Generate quantum chunks up to hardware limits
             for i in range(0, min(64, key_length), chunk_size):
                 chunk = self.generate_quantum_random_bits(chunk_size)
                 quantum_chunks.extend(chunk)
             
             # Fill remainder with secure random if needed
+            # This hybrid approach maintains security while being practical
             if len(quantum_chunks) < key_length:
                 import secrets
                 remaining = key_length - len(quantum_chunks)
@@ -101,68 +166,126 @@ class QuantumRandomGenerator:
             # Use pure quantum generation for smaller keys
             key_bits = self.generate_quantum_random_bits(key_length)
         
-        # Convert to bytes for cryptographic use
+        # Convert bit array to bytes for cryptographic use
+        # Pack 8 bits into each byte following standard conventions
         key_bytes = bytearray()
         for i in range(0, len(key_bits), 8):
             byte_bits = key_bits[i:i+8]
             if len(byte_bits) == 8:
+                # Convert 8 bits to byte value (big-endian)
                 byte_value = sum(bit * (2 ** (7-j)) for j, bit in enumerate(byte_bits))
                 key_bytes.append(byte_value)
         
         return bytes(key_bytes)
     
     def generate_quantum_nonce(self, length=16):
-        """Generate quantum nonce for encryption using small quantum chunks"""
+        """
+        Generate quantum nonce for encryption using small quantum chunks
+        
+        A nonce (number used once) is critical for encryption security.
+        This method generates cryptographically secure nonces using
+        quantum randomness in manageable chunks.
+        
+        Args:
+            length (int): Length of nonce in bytes (default 16)
+            
+        Returns:
+            bytes: Quantum-generated nonce for encryption
+        """
         nonce_bits = []
         
-        # Generate in small chunks to avoid qubit limit
-        chunk_size = 8
+        # Generate in small chunks to avoid quantum hardware limitations
+        chunk_size = 8  # Small chunks for reliable quantum generation
         for i in range(0, length * 8, chunk_size):
-            chunk = self.generate_quantum_random_bits(min(chunk_size, length * 8 - i))
+            remaining_bits = min(chunk_size, length * 8 - i)
+            chunk = self.generate_quantum_random_bits(remaining_bits)
             nonce_bits.extend(chunk)
         
+        # Convert bits to bytes for cryptographic use
         nonce = bytearray()
         for i in range(0, len(nonce_bits), 8):
             byte_bits = nonce_bits[i:i+8]
             if len(byte_bits) == 8:
+                # Pack bits into byte (big-endian format)
                 byte_value = sum(bit * (2 ** (7-j)) for j, bit in enumerate(byte_bits))
                 nonce.append(byte_value)
         
         return bytes(nonce)
     
     def quantum_entropy_analysis(self, bits):
-        """Analyze quantum entropy of generated bits"""
+        """
+        Analyze quantum entropy of generated bits
+        
+        Entropy measures the randomness quality of generated bits.
+        Perfect quantum randomness should approach maximum entropy.
+        
+        Args:
+            bits (list): List of generated random bits
+            
+        Returns:
+            float: Shannon entropy value (0 to 1 for binary)
+        """
         if not bits:
             return 0.0
         
-        # Calculate Shannon entropy
+        # Calculate Shannon entropy to measure randomness quality
         from collections import Counter
-        counts = Counter(bits)
+        counts = Counter(bits)  # Count occurrences of 0s and 1s
         entropy = 0.0
         n = len(bits)
         
+        # Shannon entropy formula: H = -Σ p(x) * log2(p(x))
         for count in counts.values():
-            p = count / n
+            p = count / n  # Probability of this bit value
             if p > 0:
-                entropy -= p * np.log2(p)
+                entropy -= p * np.log2(p)  # Add entropy contribution
         
-        return entropy
+        return entropy  # Maximum entropy for binary is 1.0
 
 class QuantumCryptographyEngine:
     """
     Quantum Cryptography Engine for secure message encryption
-    Combines QRNG with quantum key distribution principles
+    
+    This class implements quantum-enhanced cryptography by combining
+    quantum random number generation with classical encryption methods.
+    It provides the cryptographic foundation for secure quantum communication.
+    
+    Key Features:
+    - Quantum key generation and distribution
+    - Message encryption using quantum-derived keys
+    - User session management
+    - Encryption audit logging
+    
+    Attributes:
+        qrng: Quantum random number generator instance
+        shared_keys: Dictionary storing user cryptographic keys
+        encryption_log: List of encryption operations for audit
     """
     
     def __init__(self):
-        self.qrng = QuantumRandomGenerator()
-        self.shared_keys = {}
-        self.encryption_log = []
+        """Initialize the quantum cryptography engine"""
+        self.qrng = QuantumRandomGenerator()  # Quantum randomness source
+        self.shared_keys = {}                 # User key storage
+        self.encryption_log = []              # Security audit log
         
     def quantum_encrypt_message(self, message_bits, user_id="alice"):
-        """Encrypt message using quantum-generated keys and protocols"""
+        """
+        Encrypt message using quantum-generated keys and protocols
         
-        # Generate quantum random key for this session (smaller for demo)
+        This method implements quantum-enhanced encryption by:
+        1. Generating quantum random keys and nonces
+        2. Applying secure encryption algorithms
+        3. Logging operations for security audit
+        
+        Args:
+            message_bits (list): Binary message to encrypt
+            user_id (str): Identifier for the user/session
+            
+        Returns:
+            dict: Encrypted message with metadata
+        """
+        
+        # Generate quantum random key for this session (optimized size for demo)
         quantum_key = self.qrng.generate_quantum_key(32)  # 256-bit key (32 bytes)
         quantum_nonce = self.qrng.generate_quantum_nonce(8)  # 64-bit nonce (8 bytes)
         
@@ -294,56 +417,105 @@ class QuantumCryptographyEngine:
 class SuperdenseCodingProtocol:
     """
     Enhanced Superdense Coding Protocol with Quantum Cryptography
-    Transmits 2 classical bits using 1 qubit transmission with quantum encryption
+    
+    This class implements the quantum superdense coding protocol, which allows
+    transmission of 2 classical bits using only 1 qubit by leveraging quantum
+    entanglement. Enhanced with quantum cryptography for security.
+    
+    CORE CONCEPT:
+    Superdense coding exploits quantum entanglement to achieve classical
+    information compression. Alice and Bob share an entangled Bell state,
+    and Alice can encode 2 bits by applying local operations to her qubit.
     
     NEW FEATURES:
     - Quantum Random Number Generator for true randomness
-    - Quantum cryptographic key generation and management
+    - Quantum cryptographic key generation and management  
     - Quantum authentication and message integrity
     - Enhanced security with quantum entropy analysis
     
-    Protocol Steps:
+    PROTOCOL STEPS:
     1. Generate quantum cryptographic keys using QRNG
     2. Encrypt message using quantum-generated keys
-    3. Create Bell state |Φ+⟩ = (|00⟩ + |11⟩)/√2
+    3. Create Bell state |Φ+⟩ = (|00⟩ + |11⟩)/√2 (shared entanglement)
     4. Alice encodes encrypted bits using quantum gates (I, X, Z, XZ)
     5. Alice transmits her qubit to Bob with quantum authentication
     6. Bob performs Bell measurement and quantum decryption
     7. Quantum integrity verification and message recovery
+    
+    BELL STATE ENCODING:
+    - 00 → Identity (no operation)     → |Φ+⟩ = (|00⟩ + |11⟩)/√2
+    - 01 → X gate (bit flip)         → |Ψ+⟩ = (|01⟩ + |10⟩)/√2  
+    - 10 → Z gate (phase flip)       → |Φ-⟩ = (|00⟩ - |11⟩)/√2
+    - 11 → XZ gates (bit + phase)    → |Ψ-⟩ = (|01⟩ - |10⟩)/√2
+    
+    Attributes:
+        results_history: Store all protocol execution results
+        security_log: Log security-related events and metrics
+        noise_level: Current quantum channel noise level
+        channel_quality_history: Track channel quality over time
+        real_time_metrics: Live performance and reliability metrics
+        enable_quantum_crypto: Enable/disable quantum cryptography features
+        qrng: Quantum random number generator instance
+        crypto_engine: Quantum cryptography engine
+        quantum_session_keys: User session key management
+        entropy_analysis: Quality analysis of quantum randomness
     """
     
     def __init__(self, enable_quantum_crypto=True):
-        self.results_history = []
-        self.security_log = []
-        self.noise_level = 0.0
-        self.channel_quality_history = []
+        """
+        Initialize the superdense coding protocol
+        
+        Args:
+            enable_quantum_crypto (bool): Enable quantum cryptography features
+        """
+        # Core protocol state tracking
+        self.results_history = []           # Store execution results
+        self.security_log = []              # Security event logging
+        self.noise_level = 0.0              # Quantum channel noise
+        self.channel_quality_history = []   # Channel quality metrics
+        
+        # Real-time performance monitoring
         self.real_time_metrics = {
-            'consecutive_failures': 0,
-            'consecutive_successes': 0,
-            'channel_stability': 1.0,
-            'last_update_time': time.time()
+            'consecutive_failures': 0,      # Track failure streaks
+            'consecutive_successes': 0,     # Track success streaks  
+            'channel_stability': 1.0,       # Overall channel stability
+            'last_update_time': time.time() # Last metric update
         }
         
         # Quantum Cryptography Enhancement
         self.enable_quantum_crypto = enable_quantum_crypto
         if enable_quantum_crypto:
-            self.qrng = QuantumRandomGenerator()
-            self.crypto_engine = QuantumCryptographyEngine()
-            self.quantum_session_keys = {}
-            self.entropy_analysis = []
+            # Initialize quantum cryptographic components
+            self.qrng = QuantumRandomGenerator()      # True quantum randomness
+            self.crypto_engine = QuantumCryptographyEngine()  # Encryption engine
+            self.quantum_session_keys = {}           # Session key management
+            self.entropy_analysis = []               # Randomness quality tracking
         
     def run_protocol_with_quantum_crypto(self, bit0, bit1, noise_level=0.0, user_id="alice"):
         """
         Enhanced protocol execution with quantum cryptography
+        
+        This method implements the complete superdense coding protocol with
+        quantum cryptographic enhancements for security and authentication.
+        
+        Args:
+            bit0 (int): First classical bit to transmit (0 or 1)
+            bit1 (int): Second classical bit to transmit (0 or 1)
+            noise_level (float): Quantum channel noise level (0.0 to 1.0)
+            user_id (str): User identifier for session management
+            
+        Returns:
+            dict: Complete protocol execution results with crypto metadata
         """
         start_time = time.time()
         
         # Step 1: Quantum Cryptographic Pre-processing
+        # Encrypt the message bits using quantum-generated keys for security
         quantum_crypto_data = None
         original_bits = [bit0, bit1]
         
         if self.enable_quantum_crypto:
-            # Encrypt message using quantum cryptography
+            # Encrypt message using quantum cryptography engine
             quantum_crypto_data = self.crypto_engine.quantum_encrypt_message(
                 original_bits, user_id
             )
