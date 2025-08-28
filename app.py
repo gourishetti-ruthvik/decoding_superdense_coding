@@ -445,6 +445,69 @@ def main():
                             fig_dist = create_measurement_chart(result['measurement_counts'])
                             if fig_dist:
                                 st.plotly_chart(fig_dist, use_container_width=True)
+                    
+                    # Protocol validation analysis
+                    st.markdown("---")
+                    st.markdown("#### 🔬 Protocol Validation Analysis")
+                    
+                    measurement_counts = result['measurement_counts']
+                    original_bits = result['original_bits']
+                    
+                    if measurement_counts:
+                        # Expected quantum state analysis
+                        expected_state = f"{original_bits[1]}{original_bits[0]}"  # Qiskit bit order
+                        total_shots = sum(measurement_counts.values())
+                        expected_shots = measurement_counts.get(expected_state, 0)
+                        expected_probability = expected_shots / total_shots if total_shots > 0 else 0
+                        
+                        col_val1, col_val2, col_val3 = st.columns(3)
+                        
+                        with col_val1:
+                            st.metric("Expected State", f"|{expected_state}⟩", 
+                                     help="Quantum state that should be measured most frequently")
+                        
+                        with col_val2:
+                            st.metric("Measurement Confidence", f"{expected_probability*100:.1f}%", 
+                                     help="Percentage of measurements in expected state")
+                        
+                        with col_val3:
+                            error_rate = 1 - expected_probability
+                            st.metric("Error Rate", f"{error_rate*100:.1f}%", 
+                                     help="Percentage of measurements in unexpected states")
+                        
+                        # Validation results
+                        if expected_probability > 0.8:
+                            st.success("🎯 **Excellent Protocol Validation**: >80% measurements in expected state")
+                        elif expected_probability > 0.6:
+                            st.info("✅ **Good Protocol Performance**: 60-80% measurements in expected state")
+                        elif expected_probability > 0.4:
+                            st.warning("⚠️ **Moderate Protocol Quality**: 40-60% measurements in expected state")
+                        else:
+                            st.error("❌ **Poor Protocol Performance**: <40% measurements in expected state")
+                        
+                        # Error state analysis
+                        error_states = {k: v for k, v in measurement_counts.items() if k != expected_state}
+                        if error_states:
+                            st.markdown("**Error State Analysis:**")
+                            for state, count in error_states.items():
+                                percentage = count / total_shots * 100
+                                st.write(f"• State `|{state}⟩`: {count} shots ({percentage:.1f}%) - {'Quantum noise' if percentage < 10 else 'Significant error'}")
+                        
+                        # Superdense coding validation
+                        encoding_map = {
+                            (0, 0): "00",  # Identity
+                            (0, 1): "01",  # X gate  
+                            (1, 0): "10",  # Z gate
+                            (1, 1): "11"   # XZ gates
+                        }
+                        
+                        expected_encoding = encoding_map.get(tuple(original_bits), "unknown")
+                        actual_most_frequent = max(measurement_counts.keys(), key=lambda k: measurement_counts[k])
+                        
+                        if expected_encoding == actual_most_frequent:
+                            st.success(f"🎯 **Encoding Validation Passed**: Expected `|{expected_encoding}⟩` matches measured `|{actual_most_frequent}⟩`")
+                        else:
+                            st.error(f"❌ **Encoding Validation Failed**: Expected `|{expected_encoding}⟩` but measured `|{actual_most_frequent}⟩`")
                 
                 # Technical details
                 with st.expander("⚙️ Technical Implementation Details"):

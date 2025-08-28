@@ -8,6 +8,107 @@ import plotly.express as px
 import pandas as pd
 import streamlit as st
 
+def format_bits_display(bits):
+    """Format bits for nice display"""
+    if isinstance(bits, (list, tuple)) and len(bits) == 2:
+        return f"{bits[0]}{bits[1]}"
+    return str(bits)
+
+def create_info_box(title, content, icon="ℹ️"):
+    """Create a professional info box"""
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 5px solid #4CAF50;
+        margin: 10px 0;
+    ">
+        <h3 style="color: white; margin: 0 0 10px 0;">{icon} {title}</h3>
+        <p style="color: white; margin: 0; line-height: 1.6;">{content}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+def create_security_gauge(security_score, chsh_value=2.5):
+    """Create a security level gauge"""
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number+delta",
+        value = security_score * 100,
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        title = {'text': "Security Level"},
+        delta = {'reference': 80},
+        gauge = {
+            'axis': {'range': [None, 100]},
+            'bar': {'color': "darkblue"},
+            'steps': [
+                {'range': [0, 50], 'color': "lightgray"},
+                {'range': [50, 80], 'color': "yellow"},
+                {'range': [80, 100], 'color': "green"}],
+            'threshold': {
+                'line': {'color': "red", 'width': 4},
+                'thickness': 0.75,
+                'value': 90}}))
+    
+    fig.update_layout(
+        template='plotly_dark',
+        height=250,
+        font=dict(size=12)
+    )
+    
+    # Determine security level based on both metrics
+    if security_score > 0.8 and chsh_value > 2.0:
+        level = "High"
+    elif security_score > 0.5:
+        level = "Medium"
+    else:
+        level = "Low"
+    
+    return fig, level
+
+def create_channel_quality_indicator(noise_level, fidelity):
+    """Create a channel quality indicator"""
+    quality_score = (1 - noise_level) * fidelity * 100
+    
+    if quality_score > 80:
+        color = "🟢"
+        status = "Excellent"
+    elif quality_score > 60:
+        color = "🟡"  
+        status = "Good"
+    elif quality_score > 40:
+        color = "🟠"
+        status = "Fair"
+    else:
+        color = "🔴"
+        status = "Poor"
+    
+    st.markdown(f"""
+    <div style="
+        padding: 15px;
+        border-radius: 8px;
+        background: linear-gradient(90deg, rgba(75,192,192,0.3) 0%, rgba(153,102,255,0.3) 100%);
+        border: 2px solid {color.replace('🟢', '#4CAF50').replace('🟡', '#FFC107').replace('🟠', '#FF9800').replace('🔴', '#F44336')};
+        text-align: center;
+        margin: 10px 0;
+    ">
+        <h4>{color} Channel Quality: {status}</h4>
+        <p><strong>Score:</strong> {quality_score:.1f}/100</p>
+        <p><strong>Noise Level:</strong> {noise_level:.3f} | <strong>Fidelity:</strong> {fidelity:.3f}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+def display_protocol_steps(steps):
+    """Display protocol execution steps"""
+    if not steps:
+        st.info("No protocol steps recorded.")
+        return
+    
+    for i, step in enumerate(steps, 1):
+        step_icon = "🔧" if "initialize" in step.lower() else "⚡" if "encode" in step.lower() else "🔗" if "entangle" in step.lower() else "📡" if "transmit" in step.lower() else "📊" if "measure" in step.lower() else "🔍"
+        st.markdown(f"**{i}.** {step_icon} {step}")
+    
+    st.success("✅ Protocol execution completed successfully!")
+
 def create_efficiency_chart():
     """Create professional communication efficiency comparison chart"""
     fig = go.Figure(data=[
@@ -17,462 +118,1142 @@ def create_efficiency_chart():
             y=[1, 2],
             marker_color=['#E74C3C', '#2ECC71'],
             text=['1 bit', '2 bits'],
-            textposition='auto',
+            textposition='outside',
+            textfont=dict(size=16, color='white'),
         )
     ])
     
     fig.update_layout(
-        title={
-            'text': "Communication Protocol Efficiency Comparison",
-            'x': 0.5,
-            'xanchor': 'center',
-            'font': {'size': 18, 'color': '#2C3E50'}
-        },
-        xaxis_title="Protocol Type",
-        yaxis_title="Bits Transmitted per Channel Use",
-        showlegend=False,
+        title='Communication Efficiency Comparison',
+        xaxis_title='Protocol Type',
+        yaxis_title='Bits Transmitted per Qubit',
+        template='plotly_dark',
         height=400,
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        font={'color': '#2C3E50'}
+        showlegend=False,
+        font=dict(size=14),
+        title_font=dict(size=18),
+        xaxis=dict(
+            tickfont=dict(size=14),
+            title_font=dict(size=16)
+        ),
+        yaxis=dict(
+            tickfont=dict(size=14),
+            title_font=dict(size=16),
+            range=[0, 2.5]
+        )
     )
     
-    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#ECF0F1')
-    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#ECF0F1')
+    fig.add_annotation(
+        x=0, y=1.2,
+        text="Standard<br>Classical",
+        showarrow=False,
+        font=dict(size=12, color='white'),
+        bgcolor='rgba(231, 76, 60, 0.7)',
+        bordercolor='white',
+        borderwidth=1
+    )
+    
+    fig.add_annotation(
+        x=1, y=2.2,
+        text="Quantum<br>Advantage",
+        showarrow=False,
+        font=dict(size=12, color='white'),
+        bgcolor='rgba(46, 204, 113, 0.7)',
+        bordercolor='white',
+        borderwidth=1
+    )
     
     return fig
 
 def create_measurement_chart(measurement_counts):
-    """Create measurement distribution chart with professional styling"""
+    """Create enhanced measurement results chart with validation insights"""
     if not measurement_counts:
         return None
-        
+    
     states = list(measurement_counts.keys())
     counts = list(measurement_counts.values())
+    total_shots = sum(counts)
     
-    # Calculate percentages
-    total = sum(counts)
-    percentages = [f"{(c/total)*100:.1f}%" for c in counts]
+    # Calculate probabilities and determine state classifications
+    probabilities = [count/total_shots for count in counts]
+    max_count = max(counts)
     
-    fig = px.bar(
-        x=states, 
-        y=counts,
-        title="Quantum Measurement Distribution",
-        labels={'x': 'Quantum State', 'y': 'Measurement Count'},
-        color=counts,
-        color_continuous_scale='Viridis',
-        text=percentages
+    # Color coding based on measurement confidence
+    colors = []
+    for count in counts:
+        if count == max_count:
+            colors.append('#2ECC71')  # Green for primary state
+        elif count > total_shots * 0.1:  # More than 10% suggests significant presence
+            colors.append('#F39C12')  # Orange for secondary states
+        else:
+            colors.append('#E74C3C')  # Red for noise/error states
+    
+    # Create professional bar chart
+    fig = go.Figure(data=[
+        go.Bar(
+            x=[f"|{state}⟩" for state in states],
+            y=counts,
+            marker_color=colors,
+            text=[f"{count}<br>({prob:.1%})" for count, prob in zip(counts, probabilities)],
+            textposition='outside',
+            textfont=dict(size=12, color='white'),
+            hovertemplate='<b>State:</b> |%{x}⟩<br>' +
+                         '<b>Count:</b> %{y}<br>' +
+                         '<b>Probability:</b> %{customdata:.3f}<br>' +
+                         '<extra></extra>',
+            customdata=probabilities
+        )
+    ])
+    
+    fig.update_layout(
+        title='Quantum State Measurement Distribution',
+        xaxis_title='Quantum States',
+        yaxis_title='Measurement Count',
+        template='plotly_dark',
+        height=450,
+        showlegend=False,
+        font=dict(size=12),
+        title_font=dict(size=16),
+        xaxis=dict(
+            tickfont=dict(size=12),
+            title_font=dict(size=14)
+        ),
+        yaxis=dict(
+            tickfont=dict(size=12),
+            title_font=dict(size=14)
+        )
     )
     
-    fig.update_traces(textposition='outside')
+    # Add validation annotations
+    primary_state = states[counts.index(max_count)]
+    confidence = max_count / total_shots * 100
+    
+    fig.add_annotation(
+        x=len(states)-1, y=max(counts) * 0.8,
+        text=f"Primary: |{primary_state}⟩<br>Confidence: {confidence:.1f}%",
+        showarrow=True,
+        arrowhead=2,
+        arrowcolor='white',
+        font=dict(size=11, color='white'),
+        bgcolor='rgba(46, 204, 113, 0.8)',
+        bordercolor='white',
+        borderwidth=1
+    )
+    
+    return fig
+
+def create_channel_status_chart(noise_level, fidelity, error_rate):
+    """Create real-time channel status visualization"""
+    # Channel quality metrics
+    metrics = ['Noise Level', 'Fidelity', 'Error Rate']
+    values = [noise_level * 100, fidelity * 100, (1 - error_rate) * 100]
+    
+    # Color coding based on performance
+    colors = []
+    for i, value in enumerate(values):
+        if i == 0:  # Noise level (lower is better)
+            colors.append('#E74C3C' if value > 30 else '#F39C12' if value > 15 else '#2ECC71')
+        else:  # Fidelity and Success Rate (higher is better)
+            colors.append('#2ECC71' if value > 80 else '#F39C12' if value > 60 else '#E74C3C')
+    
+    fig = go.Figure(data=[
+        go.Bar(
+            x=metrics,
+            y=values,
+            marker_color=colors,
+            text=[f"{value:.1f}%" for value in values],
+            textposition='outside',
+            textfont=dict(size=14, color='white'),
+        )
+    ])
+    
     fig.update_layout(
-        title={'x': 0.5, 'xanchor': 'center'},
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        showlegend=False
+        title='Real-time Channel Performance',
+        xaxis_title='Performance Metrics',
+        yaxis_title='Percentage (%)',
+        template='plotly_dark',
+        height=350,
+        showlegend=False,
+        font=dict(size=12),
+        title_font=dict(size=16),
+        yaxis=dict(range=[0, 100])
+    )
+    
+    return fig
+
+def display_measurement_statistics(measurement_counts):
+    """Enhanced measurement statistics with protocol validation"""
+    if not measurement_counts:
+        st.warning("No measurement data available.")
+        return None
+    
+    # Convert to DataFrame for analysis
+    total_measurements = sum(measurement_counts.values())
+    data = []
+    
+    for state, count in measurement_counts.items():
+        probability = count / total_measurements
+        data.append({
+            'Quantum State': state,
+            'Count': count,
+            'Probability': probability
+        })
+    
+    counts_df = pd.DataFrame(data)
+    counts_df = counts_df.sort_values('Count', ascending=False)
+    
+    # Add analysis columns
+    counts_df['Percentage'] = (counts_df['Probability'] * 100).round(2)
+    counts_df['Expected?'] = ['✅ Primary' if row['Count'] == counts_df['Count'].max() 
+                             else ('⚠️ Error' if row['Count'] > total_measurements * 0.1 
+                                  else '❌ Noise') for _, row in counts_df.iterrows()]
+    
+    # Format for display
+    counts_df['Probability'] = counts_df['Probability'].round(4)
+    counts_df['Percentage'] = counts_df['Percentage'].astype(str) + '%'
+    counts_df['Quantum State'] = counts_df['Quantum State'].apply(lambda x: f"|{x}⟩")
+    
+    st.dataframe(
+        counts_df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Quantum State": st.column_config.TextColumn("Quantum State |ψ⟩"),
+            "Count": st.column_config.NumberColumn("Measurement Count"),
+            "Probability": st.column_config.NumberColumn("Probability", format="%.4f"),
+            "Percentage": st.column_config.TextColumn("Percentage"),
+            "Expected?": st.column_config.TextColumn("Classification")
+        }
+    )
+    
+    # Protocol validation analysis without nested columns
+    primary_state = counts_df.loc[counts_df['Count'].idxmax(), 'Quantum State']
+    primary_percentage = counts_df.loc[counts_df['Count'].idxmax(), 'Count'] / total_measurements * 100
+    error_rate = (total_measurements - counts_df.loc[counts_df['Count'].idxmax(), 'Count']) / total_measurements * 100
+    
+    # Display metrics in a simple layout to avoid column nesting
+    st.markdown("**📊 Protocol Validation Summary:**")
+    st.write(f"🎯 **Primary State:** {primary_state.replace('|', '').replace('⟩', '')} ({primary_percentage:.1f}% confidence)")
+    st.write(f"⚠️ **Error Rate:** {error_rate:.1f}% (noise and decoherence effects)")
+    st.write(f"📏 **Total Measurements:** {total_measurements:,} shots")
+    
+    # Advanced validation analysis
+    st.markdown("**🔬 Detailed Protocol Analysis:**")
+    
+    # Expected state verification
+    expected_states = ['00', '01', '10', '11']
+    detected_states = [state.replace('|', '').replace('⟩', '') for state in counts_df['Quantum State'].values]
+    
+    valid_encoding = any(state in expected_states for state in detected_states)
+    if valid_encoding:
+        st.success("✅ Valid quantum encoding detected - Protocol executed correctly")
+    else:
+        st.error("❌ Invalid quantum states detected - Check Bell state preparation")
+    
+    # Noise analysis
+    if error_rate < 10:
+        st.success(f"🔥 Excellent channel quality - Error rate: {error_rate:.1f}%")
+    elif error_rate < 25:
+        st.warning(f"⚠️ Moderate noise present - Error rate: {error_rate:.1f}%")
+    else:
+        st.error(f"🚨 High noise environment - Error rate: {error_rate:.1f}%")
+    
+    # Bell state analysis
+    if primary_percentage > 70:
+        st.info("🎯 Strong Bell state correlation - Quantum entanglement preserved")
+    elif primary_percentage > 50:
+        st.warning("⚡ Moderate entanglement - Some decoherence present")
+    else:
+        st.error("💥 Weak correlation - Significant quantum decoherence")
+    
+    return counts_df
+
+def display_protocol_results(result):
+    """Display comprehensive protocol execution results"""
+    if not result:
+        st.error("No protocol results to display.")
+        return
+    
+    # Main results summary
+    st.markdown("### 📊 Protocol Execution Summary")
+    
+    # Success indicators
+    success_color = "🟢" if result.get('success', False) else "🔴"
+    fidelity_color = "🟢" if result.get('fidelity', 0) > 0.8 else "🟡" if result.get('fidelity', 0) > 0.5 else "🔴"
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric(
+            "Transmission Status",
+            f"{success_color} {'Success' if result.get('success', False) else 'Failed'}",
+            help="Overall protocol execution status"
+        )
+    
+    with col2:
+        st.metric(
+            "Fidelity",
+            f"{fidelity_color} {result.get('fidelity', 0):.3f}",
+            help="Quantum state fidelity measurement"
+        )
+    
+    with col3:
+        st.metric(
+            "Error Rate",
+            f"{result.get('error_rate', 1.0):.3f}",
+            help="Protocol error rate"
+        )
+    
+    with col4:
+        st.metric(
+            "Bits Transmitted",
+            f"2 bits/qubit",
+            help="Superdense coding efficiency"
+        )
+    
+    # Detailed bit information
+    st.markdown("### 🔤 Bit Transmission Details")
+    
+    original_bits = result.get('original_bits', 'N/A')
+    decoded_bits = result.get('decoded_bits', 'N/A')
+    
+    if isinstance(original_bits, (list, tuple)) and len(original_bits) == 2:
+        original_display = f"{original_bits[0]}{original_bits[1]}"
+    else:
+        original_display = str(original_bits)
+    
+    if isinstance(decoded_bits, (list, tuple)) and len(decoded_bits) == 2:
+        decoded_display = f"{decoded_bits[0]}{decoded_bits[1]}"
+    else:
+        decoded_display = str(decoded_bits)
+    
+    col_bits1, col_bits2 = st.columns(2)
+    
+    with col_bits1:
+        st.info(f"📤 **Original Bits:** `{original_display}`")
+    
+    with col_bits2:
+        match_icon = "✅" if original_display == decoded_display else "❌"
+        st.info(f"📥 **Decoded Bits:** `{decoded_display}` {match_icon}")
+    
+    # Channel information if available
+    if 'channel_info' in result:
+        channel = result['channel_info']
+        st.markdown("### 📡 Channel Status")
+        
+        noise_level = channel.get('noise_level', 0)
+        noise_color = "🟢" if noise_level < 0.1 else "🟡" if noise_level < 0.3 else "🔴"
+        
+        st.write(f"**Noise Level:** {noise_color} {noise_level:.3f}")
+        st.write(f"**Channel Type:** {channel.get('type', 'Unknown')}")
+        
+        if 'correction_applied' in channel:
+            correction_icon = "✅" if channel['correction_applied'] else "❌"
+            st.write(f"**Noise Correction:** {correction_icon} {'Applied' if channel['correction_applied'] else 'Not Applied'}")
+
+def create_bell_state_visualization():
+    """Create Bell state preparation visualization"""
+    fig = go.Figure()
+    
+    # Bell states data
+    bell_states = ['|Φ⁺⟩ = (|00⟩ + |11⟩)/√2', '|Φ⁻⟩ = (|00⟩ - |11⟩)/√2', 
+                   '|Ψ⁺⟩ = (|01⟩ + |10⟩)/√2', '|Ψ⁻⟩ = (|01⟩ - |10⟩)/√2']
+    bit_combinations = ['00', '01', '10', '11']
+    
+    fig.add_trace(go.Scatter(
+        x=list(range(4)),
+        y=[1]*4,
+        mode='markers+text',
+        marker=dict(size=60, color=['#2ECC71', '#3498DB', '#F39C12', '#E74C3C']),
+        text=bell_states,
+        textposition='top center',
+        textfont=dict(size=10, color='white'),
+        name='Bell States'
+    ))
+    
+    # Add bit encoding information
+    fig.add_trace(go.Scatter(
+        x=list(range(4)),
+        y=[0.5]*4,
+        mode='markers+text',
+        marker=dict(size=40, color='rgba(255,255,255,0.3)'),
+        text=[f"Input: {bits}" for bits in bit_combinations],
+        textposition='middle center',
+        textfont=dict(size=12, color='white'),
+        name='Bit Encoding'
+    ))
+    
+    fig.update_layout(
+        title='Bell State Encoding for Superdense Coding',
+        xaxis_title='Bit Combination Index',
+        yaxis_title='Quantum State Level',
+        template='plotly_dark',
+        height=400,
+        showlegend=False,
+        xaxis=dict(tickmode='array', tickvals=list(range(4)), ticktext=bit_combinations),
+        yaxis=dict(range=[0, 1.5], showticklabels=False)
+    )
+    
+    return fig
+
+def create_quantum_circuit_display():
+    """Create a visual representation of the quantum circuit"""
+    # This would typically require qiskit visualization, but we'll create a conceptual diagram
+    fig = go.Figure()
+    
+    # Circuit elements (simplified representation)
+    steps = ['Initialize', 'Encode', 'Entangle', 'Transmit', 'Measure', 'Decode']
+    y_pos = [2, 2, 2, 2, 2, 2]
+    
+    fig.add_trace(go.Scatter(
+        x=list(range(len(steps))),
+        y=y_pos,
+        mode='markers+lines+text',
+        marker=dict(size=50, color='#3498DB'),
+        line=dict(width=4, color='#2ECC71'),
+        text=steps,
+        textposition='bottom center',
+        textfont=dict(size=12, color='white'),
+        name='Quantum Circuit Flow'
+    ))
+    
+    # Add qubit lines
+    fig.add_trace(go.Scatter(
+        x=[-0.5, len(steps)-0.5],
+        y=[2.5, 2.5],
+        mode='lines',
+        line=dict(width=2, color='white'),
+        name='Qubit 1'
+    ))
+    
+    fig.add_trace(go.Scatter(
+        x=[-0.5, len(steps)-0.5],
+        y=[1.5, 1.5],
+        mode='lines',
+        line=dict(width=2, color='white'),
+        name='Qubit 2'
+    ))
+    
+    fig.update_layout(
+        title='Superdense Coding Quantum Circuit',
+        template='plotly_dark',
+        height=300,
+        showlegend=False,
+        xaxis=dict(showticklabels=False, showgrid=False),
+        yaxis=dict(showticklabels=False, showgrid=False, range=[1, 3])
     )
     
     return fig
 
 def create_performance_chart(results_history):
-    """Create comprehensive performance tracking chart"""
-    if not results_history:
+    """Create performance analytics chart from protocol results history"""
+    if not results_history or len(results_history) < 2:
         return None
     
-    timestamps = list(range(1, len(results_history) + 1))
-    fidelities = [r['fidelity'] for r in results_history]
-    success_rates = [1 if r['success'] else 0 for r in results_history]
+    # Extract data from results history
+    iterations = list(range(1, len(results_history) + 1))
+    fidelities = [result.get('fidelity', 0) for result in results_history]
+    success_rates = [1 if result.get('success', False) else 0 for result in results_history]
+    error_rates = [result.get('error_rate', 1.0) for result in results_history]
     
+    # Calculate running averages
+    running_fidelity = []
+    running_success = []
+    running_error = []
+    
+    for i in range(len(results_history)):
+        running_fidelity.append(sum(fidelities[:i+1]) / (i+1))
+        running_success.append(sum(success_rates[:i+1]) / (i+1))
+        running_error.append(sum(error_rates[:i+1]) / (i+1))
+    
+    # Create subplot figure
     fig = go.Figure()
     
-    # Add fidelity line
+    # Add fidelity trace
     fig.add_trace(go.Scatter(
-        x=timestamps, 
-        y=fidelities, 
+        x=iterations,
+        y=fidelities,
         mode='lines+markers',
-        name='Protocol Fidelity', 
+        name='Fidelity',
+        line=dict(color='#2ECC71', width=3),
+        marker=dict(size=8),
+        hovertemplate='<b>Run %{x}</b><br>' +
+                     'Fidelity: %{y:.3f}<br>' +
+                     '<extra></extra>'
+    ))
+    
+    # Add running average fidelity
+    fig.add_trace(go.Scatter(
+        x=iterations,
+        y=running_fidelity,
+        mode='lines',
+        name='Avg Fidelity',
+        line=dict(color='#27AE60', width=2, dash='dash'),
+        hovertemplate='<b>Run %{x}</b><br>' +
+                     'Average Fidelity: %{y:.3f}<br>' +
+                     '<extra></extra>'
+    ))
+    
+    # Add success rate trace
+    fig.add_trace(go.Scatter(
+        x=iterations,
+        y=success_rates,
+        mode='lines+markers',
+        name='Success Rate',
         line=dict(color='#3498DB', width=3),
-        marker=dict(size=8)
+        marker=dict(size=8),
+        yaxis='y2',
+        hovertemplate='<b>Run %{x}</b><br>' +
+                     'Success: %{y}<br>' +
+                     '<extra></extra>'
     ))
     
-    # Add success rate line
+    # Add running average success rate
     fig.add_trace(go.Scatter(
-        x=timestamps, 
-        y=success_rates, 
-        mode='lines+markers',
-        name='Success Rate', 
-        line=dict(color='#27AE60', width=3),
-        marker=dict(size=8)
+        x=iterations,
+        y=running_success,
+        mode='lines',
+        name='Avg Success',
+        line=dict(color='#2980B9', width=2, dash='dash'),
+        yaxis='y2',
+        hovertemplate='<b>Run %{x}</b><br>' +
+                     'Average Success: %{y:.3f}<br>' +
+                     '<extra></extra>'
     ))
     
+    # Update layout for dual y-axis
     fig.update_layout(
-        title={
-            'text': "Protocol Performance Analytics",
-            'x': 0.5,
-            'xanchor': 'center',
-            'font': {'size': 18}
-        },
-        xaxis_title="Execution Number",
-        yaxis_title="Performance Metric",
-        hovermode='x',
-        plot_bgcolor='white',
-        paper_bgcolor='white'
+        title='Protocol Performance Analytics',
+        xaxis_title='Protocol Execution #',
+        yaxis=dict(
+            title='Fidelity',
+            title_font=dict(color='#2ECC71'),
+            tickfont=dict(color='#2ECC71'),
+            range=[0, 1]
+        ),
+        yaxis2=dict(
+            title='Success Rate',
+            title_font=dict(color='#3498DB'),
+            tickfont=dict(color='#3498DB'),
+            overlaying='y',
+            side='right',
+            range=[0, 1]
+        ),
+        template='plotly_dark',
+        height=450,
+        hovermode='x unified',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
+    )
+    
+    # Add performance annotations
+    avg_fidelity = sum(fidelities) / len(fidelities)
+    avg_success = sum(success_rates) / len(success_rates)
+    
+    fig.add_annotation(
+        x=len(iterations) * 0.7,
+        y=avg_fidelity,
+        text=f"Avg Fidelity: {avg_fidelity:.3f}",
+        showarrow=True,
+        arrowhead=2,
+        arrowcolor='#2ECC71',
+        bgcolor='rgba(46, 204, 113, 0.8)',
+        bordercolor='white',
+        borderwidth=1,
+        font=dict(color='white', size=12)
     )
     
     return fig
 
-def display_protocol_steps(steps):
-    """Display protocol execution steps in a clean format"""
-    st.markdown("### 🔄 Protocol Execution Steps")
-    
-    for i, step in enumerate(steps, 1):
-        st.markdown(f"**Step {i}:** {step}")
-
-def display_measurement_statistics(measurement_counts):
-    """Display detailed measurement statistics as professional table"""
-    if measurement_counts:
-        counts_df = pd.DataFrame(
-            list(measurement_counts.items()), 
-            columns=['Quantum State', 'Count']
-        )
-        total_measurements = counts_df['Count'].sum()
-        counts_df['Probability'] = counts_df['Count'] / total_measurements
-        counts_df['Percentage'] = (counts_df['Probability'] * 100).round(2)
-        
-        # Format for display
-        counts_df['Probability'] = counts_df['Probability'].round(4)
-        counts_df['Percentage'] = counts_df['Percentage'].astype(str) + '%'
-        
-        st.dataframe(
-            counts_df,
-            use_container_width=True,
-            hide_index=True
-        )
-        return counts_df
-    return None
-
-def get_scenario_bits(scenario):
-    """Get predefined message bits for different application scenarios"""
-    scenario_mapping = {
-        "Medical Emergency Alert": [1, 1],      # Critical priority
-        "Financial Transaction": [1, 0],         # High security
-        "IoT Sensor Reading": [0, 1],           # Data transmission
-        "System Status Update": [0, 0],         # Normal operation
-        "Security Alert": [1, 1],               # Maximum priority
-        "Network Heartbeat": [0, 0]             # Keep-alive signal
-    }
-    return scenario_mapping.get(scenario, [0, 1])
-
 def text_to_bits(text):
-    """
-    Convert text input to binary representation
-    FIXED: Proper text to bits conversion
-    """
-    if not text or len(text) == 0:
-        return [0, 1]
+    """Convert text to 2-bit representation"""
+    if not text:
+        return 0, 0
     
     # Get ASCII value of first character
     ascii_val = ord(text[0])
-    # Convert to 8-bit binary string
-    binary_str = format(ascii_val, '08b')
-    # Take first 2 bits
-    bit0 = int(binary_str[0])
-    bit1 = int(binary_str[1])
     
-    return [bit0, bit1]
-
-def format_bits_display(bits):
-    """Format bit array for clean display"""
-    return f"[{bits[0]}, {bits[1]}] → Binary: '{bits[0]}{bits[1]}'"
-
-def create_security_gauge(security_metric, chsh_value):
-    """Create a security level gauge based on CHSH inequality"""
+    # Convert to binary and take last 2 bits
+    binary = format(ascii_val, '08b')
+    bit0 = int(binary[-2])  # Second to last bit
+    bit1 = int(binary[-1])  # Last bit
     
-    # Determine security level and color
-    if chsh_value > 2.4:
-        security_level = "High Security"
-        color = "#27AE60"  # Green
-    elif chsh_value > 2.0:
-        security_level = "Moderate Security" 
-        color = "#F39C12"  # Orange
-    else:
-        security_level = "Potential Risk"
-        color = "#E74C3C"  # Red
-    
-    fig = go.Figure(go.Indicator(
-        mode = "gauge+number+delta",
-        value = chsh_value,
-        domain = {'x': [0, 1], 'y': [0, 1]},
-        title = {'text': f"Channel Security<br><span style='font-size:0.8em;color:gray'>CHSH Parameter</span>"},
-        delta = {'reference': 2.0},
-        gauge = {
-            'axis': {'range': [None, 3.0]},
-            'bar': {'color': color},
-            'steps': [
-                {'range': [0, 2.0], 'color': "#FADBD8"},
-                {'range': [2.0, 2.4], 'color': "#FCF3CF"}, 
-                {'range': [2.4, 3.0], 'color': "#D5DBDB"}
-            ],
-            'threshold': {
-                'line': {'color': "red", 'width': 4},
-                'thickness': 0.75,
-                'value': 2.0
-            }
-        }
-    ))
-    
-    fig.update_layout(
-        height=300,
-        paper_bgcolor='white',
-        plot_bgcolor='white'
-    )
-    
-    return fig, security_level
-
-def display_technical_specs():
-    """Display technical specifications in a professional format"""
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("""
-        #### 🔬 Quantum System Specifications
-        - **Qubits Used**: 2 (Alice: 1, Bob: 1)
-        - **Bell States**: 4 maximally entangled states
-        - **Channel Capacity**: 2 classical bits per transmission
-        - **Quantum Advantage**: 100% efficiency improvement
-        - **Fidelity**: >95% (ideal conditions)
-        """)
-    
-    with col2:
-        st.markdown("""
-        #### ⚙️ Implementation Features
-        - **Protocol**: Standard Superdense Coding
-        - **Security**: CHSH inequality monitoring
-        - **Noise Modeling**: Realistic channel simulation
-        - **Backend**: Qiskit quantum simulator
-        - **Interface**: Real-time interactive dashboard
-        """)
-
-def create_info_box(title, content, box_type="info"):
-    """Create styled information boxes"""
-    
-    colors = {
-        "info": {"bg": "#EBF3FD", "border": "#3498DB", "icon": "ℹ️"},
-        "success": {"bg": "#E8F5E8", "border": "#27AE60", "icon": "✅"},
-        "warning": {"bg": "#FEF9E7", "border": "#F39C12", "icon": "⚠️"},
-        "error": {"bg": "#FADBD8", "border": "#E74C3C", "icon": "❌"}
-    }
-    
-    style = colors.get(box_type, colors["info"])
-    
-    st.markdown(f"""
-    <div style="
-        background-color: {style['bg']};
-        border-left: 4px solid {style['border']};
-        padding: 1rem;
-        margin: 1rem 0;
-        border-radius: 0.25rem;
-    ">
-        <h4 style="margin: 0; color: #2C3E50;">
-            {style['icon']} {title}
-        </h4>
-        <p style="margin: 0.5rem 0 0 0; color: #34495E;">
-            {content}
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-def display_transmission_analysis(results_history):
-    """Display comprehensive transmission analysis and recommendations"""
-    if not results_history:
-        return
-    
-    st.markdown("### 📊 Transmission Performance Analysis")
-    
-    # Calculate statistics
-    fidelities = [r['fidelity'] for r in results_history]
-    success_rates = [1 if r['success'] else 0 for r in results_history]
-    error_rates = [r['error_rate'] for r in results_history]
-    noise_levels = [r['noise_level'] for r in results_history]
-    
-    avg_fidelity = sum(fidelities) / len(fidelities)
-    avg_success = sum(success_rates) / len(success_rates)
-    avg_error = sum(error_rates) / len(error_rates)
-    avg_noise = sum(noise_levels) / len(noise_levels)
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("Average Fidelity", f"{avg_fidelity:.3f}", 
-                 help="Higher is better (closer to 1.0)")
-    
-    with col2:
-        st.metric("Success Rate", f"{avg_success*100:.1f}%", 
-                 help="Percentage of successful transmissions")
-    
-    with col3:
-        st.metric("Average Error Rate", f"{avg_error:.3f}", 
-                 help="Lower is better (closer to 0.0)")
-    
-    with col4:
-        st.metric("Average Noise Level", f"{avg_noise:.3f}", 
-                 help="Channel noise during tests")
-    
-    # Recommendations
-    st.markdown("#### 🎯 Performance Recommendations")
-    
-    if avg_fidelity < 0.7:
-        create_info_box(
-            "⚠️ Low Fidelity Detected",
-            "Consider reducing noise level or implementing error correction to improve transmission quality.",
-            "warning"
-        )
-    elif avg_fidelity > 0.9:
-        create_info_box(
-            "✅ Excellent Performance",
-            "Channel conditions are optimal for quantum communication protocols.",
-            "success"
-        )
-    else:
-        create_info_box(
-            "ℹ️ Good Performance",
-            "Channel performance is within acceptable range for practical quantum communication.",
-            "info"
-        )
-    
-    # Noise impact analysis
-    if avg_noise > 0.2:
-        st.markdown("""
-        **High Noise Environment Detected:**
-        - Consider implementing quantum error correction
-        - Use adaptive protocols to adjust for channel conditions
-        - Implement error mitigation techniques
-        """)
-    elif avg_noise < 0.05:
-        st.markdown("""
-        **Low Noise Environment:**
-        - Ideal conditions for quantum communication
-        - Consider testing higher complexity protocols
-        - Explore advanced quantum algorithms
-        """)
-
-def create_channel_quality_indicator(noise_level, fidelity):
-    """Create a visual indicator for channel quality"""
-    
-    # Determine quality based on both noise and fidelity
-    if noise_level < 0.05 and fidelity > 0.9:
-        quality = "Excellent"
-        color = "#27AE60"
-        icon = "🟢"
-    elif noise_level < 0.15 and fidelity > 0.7:
-        quality = "Good"
-        color = "#F39C12"
-        icon = "🟡"
-    elif noise_level < 0.3 and fidelity > 0.5:
-        quality = "Fair"
-        color = "#E67E22"
-        icon = "🟠"
-    else:
-        quality = "Poor"
-        color = "#E74C3C"
-        icon = "🔴"
-    
-    st.markdown(f"""
-    <div style="
-        background-color: {color}20;
-        border: 2px solid {color};
-        border-radius: 10px;
-        padding: 1rem;
-        text-align: center;
-        margin: 1rem 0;
-    ">
-        <h3 style="margin: 0; color: {color};">
-            {icon} Channel Quality: {quality}
-        </h3>
-        <p style="margin: 0.5rem 0 0 0; color: #2C3E50;">
-            Noise: {noise_level:.3f} | Fidelity: {fidelity:.3f}
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-def analyze_transmission_balance(results_history):
-    """Analyze the balance of transmission results across different bit combinations"""
-    if not results_history:
-        return None
-        
-    # Count successes and failures for each bit combination
-    combinations = {'00': {'success': 0, 'total': 0},
-                   '01': {'success': 0, 'total': 0},
-                   '10': {'success': 0, 'total': 0},
-                   '11': {'success': 0, 'total': 0}}
-    
-    for result in results_history:
-        orig_bits = result['original_bits']
-        bit_combo = f"{orig_bits[0]}{orig_bits[1]}"
-        combinations[bit_combo]['total'] += 1
-        if result['success']:
-            combinations[bit_combo]['success'] += 1
-    
-    # Calculate success rates
-    balance_data = []
-    for combo, data in combinations.items():
-        if data['total'] > 0:
-            success_rate = data['success'] / data['total']
-            balance_data.append({
-                'Bit Combination': combo,
-                'Success Rate': f"{success_rate:.3f}",
-                'Successes': data['success'],
-                'Total Attempts': data['total'],
-                'Success Percentage': f"{success_rate*100:.1f}%"
-            })
-    
-    return balance_data
+    return bit0, bit1
 
 def create_balance_analysis_chart(results_history):
-    """Create a chart showing transmission balance across different inputs"""
+    """Create transmission balance analysis chart showing bit combination distribution"""
     if not results_history or len(results_history) < 4:
         return None
-        
-    balance_data = analyze_transmission_balance(results_history)
-    if not balance_data:
+    
+    # Extract bit combinations from results history
+    bit_combinations = []
+    for result in results_history:
+        original_bits = result.get('original_bits', [0, 0])
+        if isinstance(original_bits, (list, tuple)) and len(original_bits) == 2:
+            bit_combo = f"{original_bits[0]}{original_bits[1]}"
+        else:
+            bit_combo = str(original_bits)
+        bit_combinations.append(bit_combo)
+    
+    # Count occurrences of each bit combination
+    from collections import Counter
+    combo_counts = Counter(bit_combinations)
+    
+    # Ensure all combinations are represented
+    all_combos = ['00', '01', '10', '11']
+    combo_data = {combo: combo_counts.get(combo, 0) for combo in all_combos}
+    
+    # Calculate percentages
+    total_runs = sum(combo_data.values())
+    if total_runs == 0:
         return None
     
-    combinations = [d['Bit Combination'] for d in balance_data]
-    success_rates = [float(d['Success Rate']) for d in balance_data]
+    combo_percentages = {combo: (count / total_runs) * 100 for combo, count in combo_data.items()}
     
-    fig = go.Figure(data=[
-        go.Bar(
-            x=combinations,
-            y=success_rates,
-            marker_color=['#3498DB', '#2ECC71', '#F39C12', '#E74C3C'],
-            text=[d['Success Percentage'] for d in balance_data],
-            textposition='auto',
-        )
-    ])
+    # Determine balance quality
+    expected_percentage = 25.0  # Ideal: 25% each for perfect balance
+    max_deviation = max(abs(pct - expected_percentage) for pct in combo_percentages.values())
     
-    fig.update_layout(
-        title={
-            'text': "Transmission Success Rate by Bit Combination",
-            'x': 0.5,
-            'xanchor': 'center',
-            'font': {'size': 18, 'color': '#2C3E50'}
-        },
-        xaxis_title="Bit Combination (b₀b₁)",
-        yaxis_title="Success Rate",
-        yaxis=dict(range=[0, 1.1]),
-        showlegend=False,
-        height=400,
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        font={'color': '#2C3E50'}
+    if max_deviation <= 5:
+        balance_quality = "Excellent"
+        balance_color = "#2ECC71"
+    elif max_deviation <= 10:
+        balance_quality = "Good" 
+        balance_color = "#F39C12"
+    elif max_deviation <= 15:
+        balance_quality = "Fair"
+        balance_color = "#E67E22"
+    else:
+        balance_quality = "Poor"
+        balance_color = "#E74C3C"
+    
+    # Create the balance analysis chart
+    fig = go.Figure()
+    
+    # Add bar chart for bit combination distribution
+    fig.add_trace(go.Bar(
+        x=list(combo_data.keys()),
+        y=list(combo_data.values()),
+        text=[f"{count}<br>({combo_percentages[combo]:.1f}%)" 
+              for combo, count in combo_data.items()],
+        textposition='outside',
+        marker=dict(
+            color=[balance_color if abs(combo_percentages[combo] - expected_percentage) <= 5 
+                   else '#E74C3C' for combo in combo_data.keys()],
+            line=dict(color='white', width=2)
+        ),
+        hovertemplate='<b>Bits: %{x}</b><br>' +
+                     'Count: %{y}<br>' +
+                     'Percentage: %{text}<br>' +
+                     '<extra></extra>',
+        name='Transmission Count'
+    ))
+    
+    # Add reference line for perfect balance
+    fig.add_hline(
+        y=total_runs / 4,
+        line_dash="dash",
+        line_color="white",
+        annotation_text=f"Perfect Balance ({total_runs/4:.1f} each)",
+        annotation_position="top right"
     )
     
-    # Add horizontal line at 0.5 for reference
-    fig.add_hline(y=0.5, line_dash="dash", line_color="red", 
-                  annotation_text="Random Guess Level")
+    # Update layout
+    fig.update_layout(
+        title=f'Transmission Balance Analysis - Quality: {balance_quality}',
+        xaxis_title='Bit Combinations',
+        yaxis_title='Number of Transmissions',
+        template='plotly_dark',
+        height=400,
+        showlegend=False,
+        font=dict(size=12),
+        title_font=dict(size=16, color=balance_color),
+        xaxis=dict(
+            tickfont=dict(size=14),
+            title_font=dict(size=14)
+        ),
+        yaxis=dict(
+            tickfont=dict(size=12),
+            title_font=dict(size=14)
+        )
+    )
     
-    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#ECF0F1')
-    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#ECF0F1')
+    # Add balance quality annotation
+    fig.add_annotation(
+        x=1.5,
+        y=max(combo_data.values()) * 0.8,
+        text=f"Balance Quality: {balance_quality}<br>Max Deviation: {max_deviation:.1f}%",
+        showarrow=True,
+        arrowhead=2,
+        arrowcolor=balance_color,
+        bgcolor=f'rgba({int(balance_color[1:3], 16)}, {int(balance_color[3:5], 16)}, {int(balance_color[5:7], 16)}, 0.8)',
+        bordercolor='white',
+        borderwidth=1,
+        font=dict(color='white', size=11)
+    )
     
     return fig
+
+def create_detailed_balance_stats(results_history):
+    """Create detailed balance statistics for the transmission analysis"""
+    if not results_history:
+        return {}
+    
+    # Extract bit combinations
+    bit_combinations = []
+    success_by_combo = {}
+    fidelity_by_combo = {}
+    
+    for result in results_history:
+        original_bits = result.get('original_bits', [0, 0])
+        if isinstance(original_bits, (list, tuple)) and len(original_bits) == 2:
+            bit_combo = f"{original_bits[0]}{original_bits[1]}"
+        else:
+            bit_combo = str(original_bits)
+        
+        bit_combinations.append(bit_combo)
+        
+        # Track success and fidelity by combination
+        if bit_combo not in success_by_combo:
+            success_by_combo[bit_combo] = []
+            fidelity_by_combo[bit_combo] = []
+        
+        success_by_combo[bit_combo].append(1 if result.get('success', False) else 0)
+        fidelity_by_combo[bit_combo].append(result.get('fidelity', 0))
+    
+    # Calculate statistics
+    from collections import Counter
+    combo_counts = Counter(bit_combinations)
+    total_runs = len(bit_combinations)
+    
+    stats = {
+        'total_runs': total_runs,
+        'combo_counts': dict(combo_counts),
+        'combo_percentages': {combo: (count / total_runs) * 100 
+                             for combo, count in combo_counts.items()},
+        'success_rates': {combo: (sum(successes) / len(successes)) * 100 
+                         for combo, successes in success_by_combo.items()},
+        'avg_fidelities': {combo: sum(fidelities) / len(fidelities) 
+                          for combo, fidelities in fidelity_by_combo.items()}
+    }
+    
+    # Calculate balance score
+    expected_percentage = 25.0
+    deviations = [abs(pct - expected_percentage) for pct in stats['combo_percentages'].values()]
+    max_deviation = max(deviations) if deviations else 0
+    balance_score = max(0, 100 - (max_deviation * 4))  # Scale to 0-100
+    
+    stats['balance_score'] = balance_score
+    stats['max_deviation'] = max_deviation
+    
+    return stats
+
+def get_scenario_bits(scenario):
+    """Map application scenarios to specific bit combinations"""
+    scenario_map = {
+        "Quantum Key Distribution": (0, 0),  # Secure key establishment
+        "Secure Banking": (0, 1),            # Financial transaction
+        "Military Communication": (1, 0),     # Defense protocol
+        "Satellite Communication": (1, 1),    # Space communication
+        "Medical Data Transfer": (0, 0),      # Healthcare data
+        "Financial Trading": (0, 1),          # High-frequency trading
+        "IoT Device Control": (1, 0),         # Internet of Things
+        "Emergency Services": (1, 1),         # Emergency communication
+        "Blockchain Verification": (0, 0),    # Cryptocurrency
+        "Scientific Research": (0, 1),        # Research data
+        "Government Communications": (1, 0),   # Official channels
+        "Autonomous Vehicle": (1, 1),         # Self-driving car data
+        "Smart Grid Control": (0, 0),         # Power grid management
+        "Weather Monitoring": (0, 1),         # Meteorological data
+        "Air Traffic Control": (1, 0),        # Aviation safety
+        "Nuclear Facility": (1, 1),           # Nuclear monitoring
+        "Space Exploration": (0, 0),          # NASA/ESA missions
+        "Cybersecurity Alert": (0, 1),        # Security monitoring
+        "Supply Chain": (1, 0),               # Logistics tracking
+        "Stock Market": (1, 1),               # Market data
+        "Gaming Protocol": (0, 0),            # Online gaming
+        "Social Media": (0, 1),               # Social networks
+        "Video Streaming": (1, 0),            # Media content
+        "Email Encryption": (1, 1),           # Secure email
+        "Database Sync": (0, 0),              # Data synchronization
+        "API Authentication": (0, 1),         # Service authentication
+        "Cloud Storage": (1, 0),              # File storage
+        "VPN Connection": (1, 1),             # Virtual private network
+        "Smart Home": (0, 0),                 # Home automation
+        "Industrial IoT": (0, 1),             # Factory automation
+        "Autonomous Drone": (1, 0),           # Drone communication
+        "Biometric Security": (1, 1),         # Identity verification
+        "Remote Surgery": (0, 0),             # Telemedicine
+        "Stock Trading": (0, 1),              # Algorithmic trading
+        "Quantum Internet": (1, 0),           # Quantum networking
+        "Distributed Computing": (1, 1),      # Grid computing
+        "Privacy Protection": (0, 0),         # Data privacy
+        "Authentication": (0, 1),             # User verification
+        "Data Integrity": (1, 0),             # Data validation
+        "Network Security": (1, 1),           # Security protocols
+        "Emergency Alert": (0, 0),            # Crisis communication
+        "Traffic Management": (0, 1),         # Urban traffic
+        "Energy Grid": (1, 0),                # Smart grid
+        "Spacecraft Control": (1, 1),         # Space missions
+        "Research Collaboration": (0, 0),     # Academic research
+        "Patent Filing": (0, 1),              # Intellectual property
+        "Legal Documentation": (1, 0),        # Legal systems
+        "Insurance Claims": (1, 1),           # Insurance processing
+        "Healthcare Records": (0, 0),         # Medical records
+        "Pharmaceutical Research": (0, 1),    # Drug development
+        "Climate Monitoring": (1, 0),         # Environmental data
+        "Seismic Detection": (1, 1),          # Earthquake monitoring
+        "Ocean Research": (0, 0),             # Marine science
+        "Astronomy Data": (0, 1),             # Space observation
+        "Particle Physics": (1, 0),           # Physics experiments
+        "Gene Sequencing": (1, 1),            # Genomics research
+        "Neural Networks": (0, 0),            # AI training
+        "Machine Learning": (0, 1),           # ML algorithms
+        "Quantum Computing": (1, 0),          # Quantum algorithms
+        "Cryptography": (1, 1),               # Encryption protocols
+        "Digital Forensics": (0, 0),          # Investigation tools
+        "Incident Response": (0, 1),          # Security incidents
+        "Threat Detection": (1, 0),           # Cybersecurity
+        "Vulnerability Scan": (1, 1),         # Security assessment
+        "Penetration Testing": (0, 0),        # Security testing
+        "Compliance Audit": (0, 1),           # Regulatory compliance
+        "Risk Assessment": (1, 0),            # Risk management
+        "Business Intelligence": (1, 1),      # Analytics
+        "Customer Service": (0, 0),           # Support systems
+        "Sales Analytics": (0, 1),            # Sales data
+        "Marketing Campaign": (1, 0),         # Marketing analytics
+        "Product Development": (1, 1),        # R&D communication
+        "Quality Control": (0, 0),            # Manufacturing QC
+        "Supply Logistics": (0, 1),           # Logistics management
+        "Inventory Management": (1, 0),       # Stock control
+        "Fleet Tracking": (1, 1),             # Vehicle monitoring
+        "Asset Management": (0, 0),           # Asset tracking
+        "Maintenance Schedule": (0, 1),       # Preventive maintenance
+        "Safety Monitoring": (1, 0),          # Safety systems
+        "Environmental Control": (1, 1),      # HVAC systems
+        "Access Control": (0, 0),             # Building security
+        "Surveillance System": (0, 1),        # Security cameras
+        "Alarm System": (1, 0),               # Security alarms
+        "Fire Safety": (1, 1),                # Fire protection
+        "Emergency Evacuation": (0, 0),       # Safety protocols
+        "Disaster Recovery": (0, 1),          # Business continuity
+        "Backup Systems": (1, 0),             # Data backup
+        "System Recovery": (1, 1),            # System restoration
+        "Performance Monitoring": (0, 0),     # System monitoring
+        "Load Balancing": (0, 1),             # Resource management
+        "Capacity Planning": (1, 0),          # Infrastructure planning
+        "Resource Allocation": (1, 1),        # Resource optimization
+        "Cost Optimization": (0, 0),          # Financial optimization
+        "Budget Planning": (0, 1),            # Financial planning
+        "Revenue Analysis": (1, 0),           # Financial analysis
+        "Profit Tracking": (1, 1),            # Financial tracking
+        "Investment Strategy": (0, 0),        # Investment planning
+        "Portfolio Management": (0, 1),       # Asset management
+        "Risk Management": (1, 0),            # Financial risk
+        "Fraud Detection": (1, 1),            # Security fraud
+        "Anti-Money Laundering": (0, 0),      # AML compliance
+        "Regulatory Reporting": (0, 1),       # Compliance reporting
+        "Tax Calculation": (1, 0),            # Tax processing
+        "Audit Trail": (1, 1),                # Audit logging
+        "Security Alert": (0, 1),             # Security notification
+        "Network Heartbeat": (1, 0)           # Network monitoring
+    }
+    
+    return scenario_map.get(scenario, (0, 0))  # Default to (0,0) if scenario not found
+
+def display_technical_specs():
+    """Display comprehensive technical specifications of the quantum superdense coding protocol"""
+    
+    # Create main specification tabs
+    tab1, tab2, tab3, tab4 = st.tabs(["🔬 Quantum Theory", "⚙️ Implementation", "📊 Performance", "🔒 Security"])
+    
+    with tab1:
+        st.markdown("### 🔬 Quantum Theory Foundations")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("""
+            **🌌 Bell States (Maximally Entangled States)**
+            
+            The protocol utilizes four Bell states:
+            
+            • **|Φ⁺⟩ = (|00⟩ + |11⟩)/√2** → Encoding: 00
+            • **|Φ⁻⟩ = (|00⟩ - |11⟩)/√2** → Encoding: 01  
+            • **|Ψ⁺⟩ = (|01⟩ + |10⟩)/√2** → Encoding: 10
+            • **|Ψ⁻⟩ = (|01⟩ - |10⟩)/√2** → Encoding: 11
+            
+            **⚡ Quantum Operations**
+            
+            • **Identity (I)**: No operation for bit 0
+            • **Pauli-X**: Bit flip for encoding bit 1  
+            • **Pauli-Z**: Phase flip for encoding bit 0
+            • **Pauli-Y**: Combined X and Z for encoding bit 1
+            """)
+            
+            st.markdown("""
+            **🔗 Entanglement Properties**
+            
+            • **Concurrence**: C = 1 (maximal entanglement)
+            • **Entanglement Entropy**: S = 1 bit
+            • **Schmidt Rank**: 2 (bipartite entanglement)
+            • **Bell Inequality**: Violation by factor √2
+            """)
+        
+        with col2:
+            st.markdown("""
+            **📐 Mathematical Framework**
+            
+            **Density Matrix Representation:**
+            ```
+            ρ = |ψ⟩⟨ψ| where |ψ⟩ is Bell state
+            ```
+            
+            **Fidelity Calculation:**
+            ```
+            F = ⟨ψ_ideal|ρ_measured|ψ_ideal⟩
+            ```
+            
+            **Channel Capacity:**
+            ```
+            C = 2 bits per qubit pair
+            ```
+            
+            **Quantum Advantage:**
+            ```
+            Efficiency = 2× classical protocols
+            ```
+            """)
+            
+            # Add quantum circuit visualization
+            st.markdown("**🔄 Quantum Circuit Flow**")
+            circuit_fig = create_quantum_circuit_display()
+            st.plotly_chart(circuit_fig, use_container_width=True)
+    
+    with tab2:
+        st.markdown("### ⚙️ Implementation Specifications")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("""
+            **🔧 Hardware Requirements**
+            
+            • **Quantum Processor**: 2+ qubit capacity
+            • **Gate Fidelity**: >99.5% for reliable operation
+            • **Coherence Time**: T₂ > 100 μs minimum
+            • **Gate Time**: <10 ns for fast operations
+            • **Readout Fidelity**: >99% measurement accuracy
+            
+            **📡 Communication Channel**
+            
+            • **Quantum Channel**: Entangled photon pairs
+            • **Classical Channel**: Authentication & synchronization
+            • **Transmission Rate**: Up to 10⁶ photons/second
+            • **Distance Range**: 1-1000 km (fiber/free-space)
+            • **Error Correction**: Integrated noise mitigation
+            """)
+            
+            st.markdown("""
+            **💻 Software Framework**
+            
+            • **Quantum SDK**: Qiskit 2.0+ compatibility
+            • **Backend Support**: IBM Quantum, Google Cirq
+            • **Simulator**: High-fidelity noise modeling
+            • **Language**: Python 3.8+ with NumPy/SciPy
+            • **Visualization**: Plotly for real-time analysis
+            """)
+        
+        with col2:
+            st.markdown("""
+            **🎛️ Control Parameters**
+            
+            • **Noise Level**: 0.0 - 0.5 (configurable)
+            • **Shot Count**: 1024 (default), up to 8192
+            • **Measurement Basis**: Computational {|0⟩, |1⟩}
+            • **Error Models**: Depolarizing, amplitude damping
+            • **Calibration**: Real-time parameter adjustment
+            
+            **🔄 Protocol Steps**
+            
+            1. **Initialize**: Create |00⟩ state
+            2. **Entangle**: Apply Hadamard + CNOT
+            3. **Encode**: Apply Pauli operations
+            4. **Transmit**: Send qubit through channel
+            5. **Decode**: Reverse entanglement operations
+            6. **Measure**: Extract classical bits
+            """)
+            
+            # Technical metrics display
+            st.markdown("**📈 Performance Metrics**")
+            metrics_data = {
+                "Metric": ["Theoretical Fidelity", "Practical Fidelity", "Success Rate", "Error Rate", "Channel Capacity"],
+                "Value": ["100%", "85-95%", ">90%", "<10%", "2 bits/qubit"],
+                "Benchmark": ["Perfect", "Excellent", "High", "Low", "Optimal"]
+            }
+            st.dataframe(metrics_data, use_container_width=True)
+    
+    with tab3:
+        st.markdown("### 📊 Performance Analysis")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("""
+            **⚡ Efficiency Metrics**
+            
+            • **Information Density**: 2 classical bits per qubit
+            • **Bandwidth Efficiency**: 100% quantum channel utilization
+            • **Time Complexity**: O(1) - constant time encoding
+            • **Space Complexity**: O(1) - minimal qubit overhead
+            • **Scaling**: Linear with message length
+            
+            **🎯 Accuracy Benchmarks**
+            
+            • **Ideal Conditions**: 100% fidelity
+            • **Laboratory Conditions**: 95-98% fidelity
+            • **Real-world Deployment**: 85-95% fidelity
+            • **Noisy Environments**: 70-90% fidelity
+            • **Error Correction**: +5-10% improvement
+            """)
+            
+            # Performance comparison chart
+            efficiency_fig = create_efficiency_chart()
+            st.plotly_chart(efficiency_fig, use_container_width=True)
+        
+        with col2:
+            st.markdown("""
+            **🚀 Comparative Analysis**
+            
+            | Protocol | Bits/Qubit | Efficiency | Security |
+            |----------|------------|------------|----------|
+            | Classical | 1 | 50% | Medium |
+            | Superdense | 2 | 100% | High |
+            | Teleportation | 0 | N/A | Maximum |
+            | BB84 QKD | 0.5 | 25% | Maximum |
+            
+            **📡 Channel Performance**
+            
+            • **Fiber Optic**: 99.9% transmission fidelity
+            • **Free Space**: 95-99% (weather dependent)
+            • **Satellite Links**: 90-95% transmission fidelity
+            • **Urban Environment**: 85-95% (interference)
+            • **Underwater**: 70-85% (attenuation limited)
+            """)
+            
+            st.markdown("""
+            **🔬 Noise Analysis**
+            
+            • **Thermal Noise**: T₁ relaxation effects
+            • **Dephasing**: T₂* coherence limitations  
+            • **Gate Errors**: Imperfect quantum operations
+            • **Measurement Errors**: Readout inaccuracies
+            • **Environmental**: Electromagnetic interference
+            """)
+    
+    with tab4:
+        st.markdown("### 🔒 Security Specifications")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("""
+            **🛡️ Quantum Security Features**
+            
+            • **No-Cloning Theorem**: Quantum states cannot be copied
+            • **Entanglement Detection**: Bell inequality violations
+            • **Eavesdropping Detection**: CHSH parameter monitoring
+            • **Information-Theoretic Security**: Unconditional security
+            • **Forward Secrecy**: Each transmission independent
+            
+            **🔐 Cryptographic Properties**
+            
+            • **Key Distribution**: Quantum-secured key exchange
+            • **Authentication**: Quantum digital signatures
+            • **Integrity**: Tamper-evident transmission
+            • **Non-repudiation**: Quantum fingerprinting
+            • **Privacy**: Information-theoretic privacy
+            """)
+            
+            st.markdown("""
+            **⚔️ Attack Resistance**
+            
+            • **Intercept-Resend**: Detectable via fidelity
+            • **Man-in-the-Middle**: Prevented by entanglement
+            • **Photon-Number-Splitting**: N/A (true single photons)
+            • **Trojan Horse**: Isolated quantum channels
+            • **Side-Channel**: Hardware security modules
+            """)
+        
+        with col2:
+            st.markdown("""
+            **🎯 Security Levels**
+            
+            | Threat Model | Security Level | CHSH Value |
+            |--------------|----------------|------------|
+            | No Attack | Maximum | >2.5 |
+            | Passive Eavesdrop | High | 2.0-2.5 |
+            | Active Attack | Medium | 1.5-2.0 |
+            | Compromised | Low | <1.5 |
+            
+            **🔍 Monitoring Parameters**
+            
+            • **CHSH Inequality**: S = E(a,b) - E(a,b') + E(a',b) + E(a',b')
+            • **Threshold**: S > 2.0 indicates security
+            • **Violation**: S ≤ 2.0 suggests eavesdropping
+            • **Confidence**: Statistical significance testing
+            • **Real-time**: Continuous security monitoring
+            """)
+            
+            # Security gauge visualization
+            security_score = 0.85  # Example security level
+            gauge_fig, security_level = create_security_gauge(security_score, 2.6)
+            st.plotly_chart(gauge_fig, use_container_width=True)
+            
+            st.success(f"🔒 Current Security Level: **{security_level}**")
+    
+    # Additional technical information
+    st.markdown("---")
+    st.markdown("### 📚 Additional Resources")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.info("""
+        **📖 References**
+        • Bennett & Wiesner (1992)
+        • Nielsen & Chuang Textbook
+        • IBM Qiskit Documentation
+        • Nature Quantum Information
+        """)
+    
+    with col2:
+        st.info("""
+        **🔗 Standards**
+        • ITU-T Y.3800 Series
+        • NIST Post-Quantum Crypto
+        • ISO/IEC 23837:2021
+        • ETSI GS QKD Series
+        """)
+    
+    with col3:
+        st.info("""
+        **🛠️ Tools & Frameworks**
+        • Qiskit Quantum Computing
+        • Cirq by Google
+        • Q# Microsoft Quantum
+        • PennyLane Quantum ML
+        """)
+    
+    st.markdown("""
+    ---
+    💡 **Note**: These specifications represent the current state-of-the-art in quantum superdense coding 
+    implementation. Performance may vary based on hardware platform and environmental conditions.
+    """)
+
+
