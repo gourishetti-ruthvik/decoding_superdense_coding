@@ -2197,15 +2197,9 @@ def create_quantum_cryptography_dashboard(protocol_result, entropy_stats):
                 name='Quantum Entropy',
                 line=dict(color='blue', width=2),
                 marker=dict(size=6)
-            ),
-            row=2, col=1
-        )
-        
-        # Add entropy threshold line
-        fig.add_hline(y=7.5, line_dash="dash", line_color="red", 
-                     annotation_text="Security Threshold", row=2, col=1)
-    
-    # Security Protocol Flow
+        ),
+        row=2, col=1
+    )    # Security Protocol Flow
     flow_steps = ['Key Gen', 'Encrypt', 'Transmit', 'Decrypt', 'Verify']
     flow_success = [1, 1, 0.9, 1, 1]  # Based on protocol result
     

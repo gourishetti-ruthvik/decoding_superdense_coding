@@ -788,7 +788,9 @@ class SuperdenseCodingProtocol:
                 
                 # Get decoded bits from most frequent measurement
                 most_frequent = max(counts.keys(), key=counts.get)
-                decoded_bits = [int(most_frequent[1]), int(most_frequent[0])]  # Reverse order
+                # Qiskit bit order: most_frequent = "bit1bit0", so:
+                # decoded_bit1 = most_frequent[0], decoded_bit0 = most_frequent[1]
+                decoded_bits = [int(most_frequent[1]), int(most_frequent[0])]  # [bit0, bit1]
                 
                 # Real-time success determination with dynamic thresholds
                 noise_threshold = 0.5 - (effective_noise * 0.4)  # Higher noise = lower threshold

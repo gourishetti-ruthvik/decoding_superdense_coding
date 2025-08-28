@@ -587,10 +587,25 @@ def main():
                 
             with col_t3:
                 st.markdown("**Transmission Result:**")
-                if result['success']:
+                
+                # Real-time comparison for accurate validation
+                original_bits = result['original_bits']
+                decoded_bits = result['decoded_bits']
+                
+                # Direct comparison of bit arrays
+                if len(original_bits) == len(decoded_bits) and original_bits == decoded_bits:
+                    transmission_success = True
                     st.success("✅ Perfect Match!")
                 else:
+                    transmission_success = False
                     st.error("❌ Transmission Error")
+                    
+                # Show detailed bit comparison
+                if not transmission_success:
+                    st.warning(f"Expected: {original_bits}, Got: {decoded_bits}")
+                
+                # Update the result with correct success status
+                result['success'] = transmission_success
             
             # Quantum Simulation Visualization
             st.markdown("---")
@@ -1043,7 +1058,7 @@ def main():
                     st.dataframe(balance_df, use_container_width=True, hide_index=True)
                     
                     # Calculate overall balance score
-                    success_rates = [float(d['Success Rate']) for d in balance_data]
+                    success_rates = [float(d['Success Rate'].replace('%', '')) / 100.0 for d in balance_data]
                     if success_rates:
                         balance_score = 1.0 - (max(success_rates) - min(success_rates))
                         st.metric("Balance Score", f"{balance_score:.3f}", 
